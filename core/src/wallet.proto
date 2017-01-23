@@ -22,7 +22,6 @@
  * - Endianness: All byte arrays that represent numbers (such as hashes and private keys) are Big Endian
  * - To regenerate after editing, run: mvn generate-sources -DupdateProtobuf
  */
-
 package wallet;
 
 option java_package = "org.bitcoinj.wallet";
@@ -132,6 +131,9 @@ message Key {
 
   // Encrypted version of the seed
   optional EncryptedData encrypted_deterministic_seed = 9;
+
+  // The original account path
+  optional string account_path = 10;
 }
 
 message Script {
