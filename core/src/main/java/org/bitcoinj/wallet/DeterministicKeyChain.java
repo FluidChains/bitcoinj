@@ -815,17 +815,13 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
             Protos.Key.Builder mnemonicEntry = BasicKeyChain.serializeEncryptableItem(seed);
             mnemonicEntry.setType(Protos.Key.Type.DETERMINISTIC_MNEMONIC);
             serializeSeedEncryptableItem(seed, mnemonicEntry);
+            // TODO this is a current workaround!!! Please move it to a dedicated entry
+            mnemonicEntry.setLabel(HDUtils.formatPath(getAccountPath()));
             entries.add(mnemonicEntry.build());
         }
         Map<ECKey, Protos.Key.Builder> keys = basicKeyChain.serializeToEditableProtobufs();
         for (Map.Entry<ECKey, Protos.Key.Builder> entry : keys.entrySet()) {
             DeterministicKey key = (DeterministicKey) entry.getKey();
-            if (key.isPubKeyOnly()){
-            		System.out.println();
-            }
-            if (key.isWatching()) {
-            		System.out.println();
-            }
             Protos.Key.Builder proto = entry.getValue();
             proto.setType(Protos.Key.Type.DETERMINISTIC_KEY);
             final Protos.DeterministicKey.Builder detKey = proto.getDeterministicKeyBuilder();
@@ -870,11 +866,16 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
         int lookaheadSize = -1;
         int sigsRequiredToSpend = 1;
 
+        String originalAccountPath = "";
         PeekingIterator<Protos.Key> iter = Iterators.peekingIterator(keys.iterator());
         while (iter.hasNext()) {
             Protos.Key key = iter.next();
             final Protos.Key.Type t = key.getType();
             if (t == Protos.Key.Type.DETERMINISTIC_MNEMONIC) {
+                // recover original account path size
+                if (key.hasLabel()) {
+                    originalAccountPath = key.getLabel();
+                }
                 if (chain != null) {
                     checkState(lookaheadSize >= 0);
                     chain.setLookaheadSize(lookaheadSize);
@@ -947,7 +948,7 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
                         chain = factory.makeWatchingKeyChain(key, iter.peek(), accountKey, isFollowingKey, isMarried);
                         isWatchingAccountKey = true;
                     } else {
-                        chain = factory.makeKeyChain(key, iter.peek(), seed, crypter, isMarried);
+                        chain = factory.makeKeyChain(key, iter.peek(), seed, crypter, isMarried, originalAccountPath);
                         chain.lookaheadSize = LAZY_CALCULATE_LOOKAHEAD;
                         // If the seed is encrypted, then the chain is incomplete at this point. However, we will load
                         // it up below as we parse in the keys. We just need to check at the end that we've loaded
