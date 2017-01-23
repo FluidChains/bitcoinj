@@ -307,7 +307,11 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
      * if the starting seed is the same.
      */
     protected DeterministicKeyChain(DeterministicSeed seed) {
-        this(seed, null);
+        this(seed, null, ACCOUNT_ZERO_PATH);
+    }
+
+    public DeterministicKeyChain(DeterministicSeed seed, ImmutableList<ChildNumber> accountPath) {
+        this(seed, null, accountPath);
     }
 
     public DeterministicKeyChain(byte[] privKeyBytes, byte[] chainCode, long creationTimeSeconds, ImmutableList<ChildNumber> accountPath) {
@@ -389,6 +393,12 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
      * For use in {@link KeyChainFactory} during deserialization.
      */
     protected DeterministicKeyChain(DeterministicSeed seed, @Nullable KeyCrypter crypter) {
+        this(seed, crypter, ACCOUNT_ZERO_PATH);
+    }
+
+    protected DeterministicKeyChain(DeterministicSeed seed, @Nullable KeyCrypter crypter, ImmutableList<ChildNumber> accountPath) {
+        setAccountPath(accountPath);
+
         this.seed = seed;
         basicKeyChain = new BasicKeyChain(crypter);
         if (!seed.isEncrypted()) {
