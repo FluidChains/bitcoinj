@@ -275,30 +275,6 @@ public class Wallet extends BaseTaggableObject
         return new Wallet(params, new KeyChainGroup(params, seed, accountPath));
     }
 
-    public static Wallet fromSeed(NetworkParameters params, DeterministicSeed seed, ImmutableList<ChildNumber> accountPath, ImmutableList<ChildNumber> accountPath2) {
-        return new Wallet(params, new KeyChainGroup(params, seed, accountPath, accountPath2));
-    }
-
-    public static Wallet fromSeed(NetworkParameters params, DeterministicSeed seed, List<DeterministicKeyChain> chains) {
-        return new Wallet(params, new KeyChainGroup(params, seed, chains));
-    }
-
-    public static Wallet fromPrivateKeyAndChainCodeBytes(NetworkParameters params, byte[] privKeyBytes, byte[] chainCode, long creationTimeSeconds) {
-        return new Wallet(params, new KeyChainGroup(params, privKeyBytes, chainCode, creationTimeSeconds, DeterministicKeyChain.ACCOUNT_ZERO_PATH));
-    }
-
-    public static Wallet fromPrivateKeyAndChainCodeBytes(NetworkParameters params, byte[] privKeyBytes, byte[] chainCode, long creationTimeSeconds, ImmutableList<ChildNumber> accountPath) {
-        return new Wallet(params, new KeyChainGroup(params, privKeyBytes, chainCode, creationTimeSeconds, accountPath));
-    }
-
-    public static Wallet fromBase58EncodedKey(NetworkParameters params, String base58EncodedKey, long creationTimeSeconds) {
-        return new Wallet(params, new KeyChainGroup(params, base58EncodedKey, creationTimeSeconds, DeterministicKeyChain.ACCOUNT_ZERO_PATH));
-    }
-
-    public static Wallet fromBase58EncodedKey(NetworkParameters params, String base58EncodedKey, long creationTimeSeconds, ImmutableList<ChildNumber> accountPath) {
-        return new Wallet(params, new KeyChainGroup(params, base58EncodedKey, creationTimeSeconds, accountPath));
-    }
-
     /**
      * Creates a wallet that tracks payments to and from the HD key hierarchy rooted by the given watching key. A
      * watching key corresponds to account zero in the recommended BIP32 key hierarchy.

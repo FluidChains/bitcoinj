@@ -85,6 +85,9 @@ public final class HDKeyDerivation {
         return createMasterPrivKeyFromBytes(privKeyBytes, chainCode, ImmutableList.<ChildNumber>of());
     }
 
+    /**
+     * @throws HDDerivationException if privKeyBytes is invalid (0 or >= n).
+     */
     public static DeterministicKey createMasterPrivKeyFromBytes(byte[] privKeyBytes, byte[] chainCode, ImmutableList<ChildNumber> childNumberPath) throws HDDerivationException {
         BigInteger priv = new BigInteger(1, privKeyBytes);
         assertNonZero(priv, "Generated master key is invalid.");
