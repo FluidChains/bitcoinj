@@ -275,6 +275,14 @@ public class Wallet extends BaseTaggableObject
         return new Wallet(params, new KeyChainGroup(params, seed, accountPath));
     }
 
+    public static Wallet fromSeed(NetworkParameters params, DeterministicSeed seed, ImmutableList<ChildNumber> accountPath, ImmutableList<ChildNumber> accountPath2) {
+        return new Wallet(params, new KeyChainGroup(params, seed, accountPath, accountPath2));
+    }
+
+    public static Wallet fromSeed(NetworkParameters params, DeterministicSeed seed, List<DeterministicKeyChain> chains) {
+        return new Wallet(params, new KeyChainGroup(params, seed, chains));
+    }
+
     public static Wallet fromPrivateKeyAndChainCodeBytes(NetworkParameters params, byte[] privKeyBytes, byte[] chainCode, long creationTimeSeconds) {
         return new Wallet(params, new KeyChainGroup(params, privKeyBytes, chainCode, creationTimeSeconds, DeterministicKeyChain.ACCOUNT_ZERO_PATH));
     }

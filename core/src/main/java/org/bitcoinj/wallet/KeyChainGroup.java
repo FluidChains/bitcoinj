@@ -88,6 +88,14 @@ public class KeyChainGroup implements KeyBag {
         this(params, null, ImmutableList.of(new DeterministicKeyChain(seed, accountPath)), null, null);
     }
 
+    public KeyChainGroup(NetworkParameters params, DeterministicSeed seed, ImmutableList<ChildNumber> accountPath, ImmutableList<ChildNumber> accountPath2) {
+        this(params, null, ImmutableList.of(new DeterministicKeyChain(seed, accountPath), new DeterministicKeyChain(seed, accountPath2)), null, null);
+    }
+
+    public KeyChainGroup(NetworkParameters params, DeterministicSeed seed, List<DeterministicKeyChain> chains) {
+        this(params, null, chains, null, null);
+    }
+
     public KeyChainGroup(NetworkParameters params, byte[] privKeyBytes, byte[] chainCode, long creationTimeSeconds, ImmutableList<ChildNumber> accountPath) {
         this(params, null, ImmutableList.of(new DeterministicKeyChain(privKeyBytes, chainCode, creationTimeSeconds, accountPath)), null, null);	
     }
