@@ -68,6 +68,10 @@ public abstract class NetworkParameters {
     public static final String PAYMENT_PROTOCOL_ID_UNIT_TESTS = "unittest";
     public static final String PAYMENT_PROTOCOL_ID_REGTEST = "regtest";
 
+    /** Allow to manage custom networks without changing this class */
+    private static final Map<String, NetworkParameters> customNetworkParameters = new HashMap<String, NetworkParameters>();
+    private static final Map<String, NetworkParameters> customPaymentsProtocols = new HashMap<String, NetworkParameters>();
+
     // TODO: Seed nodes should be here as well.
 
     protected Block genesisBlock;
@@ -225,8 +229,18 @@ public abstract class NetworkParameters {
         } else if (id.equals(ID_REGTEST)) {
             return RegTestParams.get();
         } else {
-            return null;
+            return customNetworkParameters.get(id);
         }
+    }
+
+    /** Register a custom network parameter */
+    public static void addCustomNetworkParameter(String id, NetworkParameters networkParameters) {
+        customNetworkParameters.put(id, networkParameters);
+    }
+
+    /** Register a custom payment protocol */
+    public static void addCustomPaymentProtocol(String id, NetworkParameters networkParameters) {
+        customPaymentsProtocols.put(id, networkParameters);
     }
 
     /** Returns the network parameters for the given string paymentProtocolID or NULL if not recognized. */
@@ -241,7 +255,7 @@ public abstract class NetworkParameters {
         } else if (pmtProtocolId.equals(PAYMENT_PROTOCOL_ID_REGTEST)) {
             return RegTestParams.get();
         } else {
-            return null;
+            return customPaymentsProtocols.get(pmtProtocolId);
         }
     }
 
