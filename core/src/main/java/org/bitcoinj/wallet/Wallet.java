@@ -2271,6 +2271,11 @@ public class Wallet extends BaseTaggableObject
                 }
             }
 
+            // we force the result to success if wallet is watching
+            if ((result == TransactionInput.ConnectionResult.ALREADY_SPENT) && isWatching()) {
+                result = TransactionInput.ConnectionResult.SUCCESS;
+            }
+
             TransactionOutput output = checkNotNull(input.getConnectedOutput());
             if (result == TransactionInput.ConnectionResult.ALREADY_SPENT) {
                 if (fromChain) {
