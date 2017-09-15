@@ -93,7 +93,7 @@
   <dependencies>
     <dependency>
       <groupId>org.bitcoinj</groupId>
-      <artifactId>bitcoinj-core</artifactId>
+      <artifactId>bitcoinj-core-uniquid</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
