@@ -1029,7 +1029,7 @@ public class Peer extends PeerSocketHandler {
             }
         } catch (VerificationException e) {
             // We don't want verification failures to kill the thread.
-            log.warn("{}: Block verification failed", getAddress(), e);
+            log.warn("{}: Block verification failed - bau - {}", getAddress(), e);
         } catch (PrunedException e) {
             // Unreachable when in SPV mode.
             throw new RuntimeException(e);

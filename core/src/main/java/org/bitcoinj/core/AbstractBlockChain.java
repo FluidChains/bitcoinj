@@ -349,6 +349,7 @@ public abstract class AbstractBlockChain {
      */
     public boolean add(Block block) throws VerificationException, PrunedException {
         try {
+        	log.info("trying to add a new block {}", block.getHashAsString());
             return add(block, true, null, null);
         } catch (BlockStoreException e) {
             // TODO: Figure out a better way to propagate this exception to the user.

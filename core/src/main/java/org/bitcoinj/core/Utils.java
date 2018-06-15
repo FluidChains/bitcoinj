@@ -25,6 +25,8 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.io.Resources;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.UnsignedLongs;
+import com.lambdaworks.crypto.SCrypt;
+
 import org.spongycastle.crypto.digests.RIPEMD160Digest;
 
 import java.io.ByteArrayOutputStream;
@@ -57,6 +59,14 @@ public class Utils {
     private static final Joiner SPACE_JOINER = Joiner.on(" ");
 
     private static BlockingQueue<Boolean> mockSleepQueue;
+    
+    public static byte[] scryptDigest(byte[] input) {
+    	 try {
+    	 	return SCrypt.scrypt(input, input, 1024, 1, 1, 32);
+    	 } catch (Exception e) {
+    		 return null;
+    	 }
+    }
 
     /**
      * The regular {@link java.math.BigInteger#toByteArray()} method isn't quite what we often need: it appends a

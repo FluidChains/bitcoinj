@@ -117,7 +117,8 @@ public class Block extends Message {
         super(params);
         // Set up a few basic things. We are not complete after this though.
         version = setVersion;
-        difficultyTarget = 0x1d07fff8L;
+//        difficultyTarget = 0x1d07fff8L;
+        difficultyTarget = 0x1e0ffff0L;
         time = System.currentTimeMillis() / 1000;
         prevBlockHash = Sha256Hash.ZERO_HASH;
 
@@ -526,11 +527,48 @@ public class Block extends Message {
      * is thrown.
      */
     public BigInteger getDifficultyTargetAsInteger() throws VerificationException {
+    	
+    	if(getHashAsString().equals("4c9733940850a9d424f77115d8cc58185cc82912385b03daa9bd6172c9c7a56c")) {
+    		log.info("breakpoint");
+    	}
+    	
         BigInteger target = Utils.decodeCompactBits(difficultyTarget);
         if (target.signum() <= 0 || target.compareTo(params.maxTarget) > 0)
             throw new VerificationException("Difficulty target is bad: " + target.toString());
         return target;
     }
+    
+    
+    
+    /* *
+     * Start custom Litecoin
+     * */
+    private Sha256Hash scryptHash;
+    
+    private Sha256Hash calculateScryptHash() {
+    	 try {
+    	 	ByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(HEADER_SIZE);
+    	 	writeHeader(bos);
+    	 	return Sha256Hash.wrap(Utils.reverseBytes(Utils.scryptDigest(bos.toByteArray())));
+    	 } catch (IOException e) {
+    	 	throw new RuntimeException(e); // Cannot happen.
+    	 }
+    }
+
+    public String getScryptHashAsString() {
+    	 	return getScryptHash().toString();
+    }
+    
+    public Sha256Hash getScryptHash() {
+    	 if (scryptHash == null)
+    	 	scryptHash = calculateScryptHash();
+    	 return scryptHash;
+    }
+    
+    /* *
+     * End custom Litecoin
+     * */
+    
 
     /** Returns true if the hash of the block is OK (lower than difficulty target). */
     protected boolean checkProofOfWork(boolean throwException) throws VerificationException {
@@ -542,13 +580,16 @@ public class Block extends Message {
         //
         // To prevent this attack from being possible, elsewhere we check that the difficultyTarget
         // field is of the right value. This requires us to have the preceeding blocks.
+    	
+    	log.info(getHashAsString());
+    	
         BigInteger target = getDifficultyTargetAsInteger();
 
-        BigInteger h = getHash().toBigInteger();
+        BigInteger h = getScryptHash().toBigInteger();
         if (h.compareTo(target) > 0) {
             // Proof of work check failed!
             if (throwException)
-                throw new VerificationException("Hash is higher than target: " + getHashAsString() + " vs "
+                throw new VerificationException("Hash is higher than target: " + getScryptHashAsString() + " vs "
                         + target.toString(16));
             else
                 return false;
@@ -677,6 +718,9 @@ public class Block extends Message {
         //
         // Firstly we need to ensure this block does in fact represent real work done. If the difficulty is high
         // enough, it's probably been done by the network.
+    	
+    	log.info("verifyHeader() of {}", getHashAsString());
+    	
         checkProofOfWork(true);
         checkTimestamp();
     }
@@ -789,6 +833,7 @@ public class Block extends Message {
         unCacheHeader();
         this.prevBlockHash = prevBlockHash;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /**
@@ -810,6 +855,7 @@ public class Block extends Message {
         unCacheHeader();
         this.time = time;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /**
@@ -830,6 +876,7 @@ public class Block extends Message {
         unCacheHeader();
         this.difficultyTarget = compactForm;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /**
@@ -845,6 +892,7 @@ public class Block extends Message {
         unCacheHeader();
         this.nonce = nonce;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /** Returns an immutable list of transactions held in this block, or null if this object represents just a header. */
