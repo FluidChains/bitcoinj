@@ -581,11 +581,15 @@ public class Block extends Message {
         // To prevent this attack from being possible, elsewhere we check that the difficultyTarget
         // field is of the right value. This requires us to have the preceeding blocks.
     	
-    	log.info(getHashAsString());
-    	
         BigInteger target = getDifficultyTargetAsInteger();
 
-        BigInteger h = getScryptHash().toBigInteger();
+        BigInteger h;
+        if(this.params != null && this.params instanceof LitecoinNetworkParameters) {
+        	 h = getScryptHash().toBigInteger();
+        } else {
+        	h = getHash().toBigInteger();
+        }
+        
         if (h.compareTo(target) > 0) {
             // Proof of work check failed!
             if (throwException)

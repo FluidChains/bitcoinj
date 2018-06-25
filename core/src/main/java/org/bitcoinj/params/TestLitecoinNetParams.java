@@ -5,7 +5,6 @@ import java.util.Date;
 
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.LitecoinNetworkParameters;
-import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Utils;
 import org.bitcoinj.core.VerificationException;
@@ -16,8 +15,6 @@ public class TestLitecoinNetParams extends LitecoinNetworkParameters {
 	
 	public TestLitecoinNetParams() {
 		super();
-        // Difficulty adjustments are disabled for regtest. 
-        // By setting the block interval for difficulty adjustments to Integer.MAX_VALUE we make sure difficulty never changes.    
         
         id = ID_TESTNET;
         addressHeader = 111;

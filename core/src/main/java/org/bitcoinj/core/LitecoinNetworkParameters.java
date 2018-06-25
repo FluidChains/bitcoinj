@@ -27,8 +27,6 @@ public class LitecoinNetworkParameters extends NetworkParameters {
 	private static final Logger log = LoggerFactory.getLogger(LitecoinNetworkParameters.class);
 	
 	public LitecoinNetworkParameters() {
-//        super();
-//        id = "org.litecoin.production";
 		
 		alertSigningKey = Utils.HEX.decode("04302390343f91cc401d56d68b123028bf52e5fca1939df127f63c6467cdf9c8e2c14b61104cf817d0b780da337893ecc4aaff1309e536162dabbdb45200ca2b0a");
         
@@ -160,7 +158,7 @@ public class LitecoinNetworkParameters extends NetworkParameters {
         final Stopwatch watch = Stopwatch.createStarted();
         StoredBlock cursor = blockStore.get(prev.getHash());
         
-     // Litecoin: This fixes an issue where a 51% attack can change difficulty at will.
+        // Litecoin: This fixes an issue where a 51% attack can change difficulty at will.
         // Go back the full period unless it's the first retarget after genesis. Code courtesy of Art Forz
         int blockstogoback = this.getInterval() -1;
         if((storedPrev.getHeight() + 1) != this.getInterval()) {
