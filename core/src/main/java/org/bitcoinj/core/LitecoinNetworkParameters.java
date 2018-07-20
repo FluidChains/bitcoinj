@@ -1,26 +1,20 @@
 package org.bitcoinj.core;
 
-import java.io.ByteArrayOutputStream;
+import static com.google.common.base.Preconditions.checkState;
+import static org.bitcoinj.core.Coin.COIN;
+
 import java.math.BigInteger;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
-import org.bitcoinj.core.NetworkParameters.ProtocolVersion;
-import org.bitcoinj.params.AbstractBitcoinNetParams;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.utils.MonetaryFormat;
 import org.bitcoinj.utils.VersionTally;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.util.encoders.Hex;
 
 import com.google.common.base.Stopwatch;
-
-import static org.bitcoinj.core.Coin.*;
-import static com.google.common.base.Preconditions.checkState;
 
 public class LitecoinNetworkParameters extends NetworkParameters {
 	
@@ -46,15 +40,11 @@ public class LitecoinNetworkParameters extends NetworkParameters {
         checkState(genesisHash.equals("4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0"),
                 genesisBlock);
 
-        subsidyDecreaseBlockCount = 210000;
+        subsidyDecreaseBlockCount = 210000;		// TODO test with 840000
         
         addrSeeds = null;
+        dnsSeeds = null;
 
-        dnsSeeds = new String[] {
-                "testnet-seed.litecointools.com",
-                "seed-b.litecoin.loshan.co.uk",
-                "dnsseed-testnet.thrasher.io"
-        };
     }
 
     private static Coin MAX_MONEY = COIN.multiply(21000000);

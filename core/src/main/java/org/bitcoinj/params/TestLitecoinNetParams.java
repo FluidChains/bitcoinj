@@ -28,7 +28,7 @@ public class TestLitecoinNetParams extends LitecoinNetworkParameters {
         
         bip32HeaderPub = 0x043587CF;
         bip32HeaderPriv = 0x04358394;
-
+        
         majorityEnforceBlockUpgrade = TestNet2Params.TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = TestNet2Params.TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = TestNet2Params.TESTNET_MAJORITY_WINDOW;

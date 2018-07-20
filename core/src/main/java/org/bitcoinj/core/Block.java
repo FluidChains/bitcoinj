@@ -579,13 +579,13 @@ public class Block extends Message {
         // ridiculously easy difficulty and this function would accept them.
         //
         // To prevent this attack from being possible, elsewhere we check that the difficultyTarget
-        // field is of the right value. This requires us to have the preceeding blocks.
+        // field is of the right value. This requires us to have the preceding blocks.
     	
         BigInteger target = getDifficultyTargetAsInteger();
 
         BigInteger h;
         if(this.params != null && this.params instanceof LitecoinNetworkParameters) {
-        	 h = getScryptHash().toBigInteger();
+        	h = getScryptHash().toBigInteger();
         } else {
         	h = getHash().toBigInteger();
         }
