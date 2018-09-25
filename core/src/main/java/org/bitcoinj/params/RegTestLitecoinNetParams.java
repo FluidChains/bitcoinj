@@ -18,7 +18,7 @@ public class RegTestLitecoinNetParams extends TestLitecoinNetParams {
 		super();
         // Difficulty adjustments are disabled for regtest. 
         // By setting the block interval for difficulty adjustments to Integer.MAX_VALUE we make sure difficulty never changes.    
-        interval = 144;
+        interval = Integer.MAX_VALUE;
         maxTarget = MAX_TARGET;
         subsidyDecreaseBlockCount = 150;
         port = 19444;
