@@ -20,5 +20,9 @@ public enum NetworkEnum {
     MAIN,
     PROD, // alias for MAIN
     TEST,
-    REGTEST
+    REGTEST,
+    LCMAIN,
+    LCTEST,
+    LCREG
+    
 }

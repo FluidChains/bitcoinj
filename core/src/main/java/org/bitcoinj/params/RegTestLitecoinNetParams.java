@@ -29,6 +29,8 @@ public class RegTestLitecoinNetParams extends TestLitecoinNetParams {
         majorityEnforceBlockUpgrade = MainNetParams.MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = MainNetParams.MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = MainNetParams.MAINNET_MAJORITY_WINDOW;
+        
+        dnsSeeds = null;
 	}
 	
 	private static Block genesis;

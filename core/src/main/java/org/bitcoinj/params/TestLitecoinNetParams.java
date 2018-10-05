@@ -1,5 +1,7 @@
 package org.bitcoinj.params;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -12,11 +14,12 @@ import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
 
 public class TestLitecoinNetParams extends LitecoinNetworkParameters {
-	
+
 	public TestLitecoinNetParams() {
 		super();
         
-        id = ID_TESTNET;
+        id = "org.litecoin.test";
+        
         addressHeader = 111;
         p2shHeader = 196;
         dumpedPrivateKeyHeader = 239;
@@ -29,6 +32,12 @@ public class TestLitecoinNetParams extends LitecoinNetworkParameters {
         bip32HeaderPub = 0x043587CF;
         bip32HeaderPriv = 0x04358394;
         
+        dnsSeeds = new String[] {
+                "testnet-seed.litecointools.com",
+                "seed-b.litecoin.loshan.co.uk",
+                "dnsseed-testnet.thrasher.io"
+        };
+        
         majorityEnforceBlockUpgrade = TestNet2Params.TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = TestNet2Params.TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = TestNet2Params.TESTNET_MAJORITY_WINDOW;
@@ -40,6 +49,22 @@ public class TestLitecoinNetParams extends LitecoinNetworkParameters {
 		 return true;
 		 
 	 }
+	 
+	 private static Block genesis;
+
+	    @Override
+	    public Block getGenesisBlock() {
+	        synchronized (RegTestParams.class) {
+	            if (genesis == null) {
+	                genesis = super.getGenesisBlock();
+	                genesis.setNonce(293345L);
+	                genesis.setDifficultyTarget(0x1e0ffff0L);
+	                genesis.setTime(1486949366L);               
+	                checkState(genesis.getHashAsString().toLowerCase().equals("4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0"));
+	            }
+	            return genesis;
+	        }
+	    }
 	 
 	 private static TestLitecoinNetParams instance;
 	 public static synchronized TestLitecoinNetParams get() {

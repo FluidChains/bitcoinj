@@ -20,13 +20,19 @@ package org.bitcoinj.tools;
 import org.bitcoinj.core.listeners.NewBestBlockListener;
 import org.bitcoinj.core.*;
 import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.params.RegTestLitecoinNetParams;
 import org.bitcoinj.params.RegTestParams;
+import org.bitcoinj.params.TestLitecoinNetParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.MemoryBlockStore;
 import org.bitcoinj.utils.BriefLogFormatter;
 import org.bitcoinj.utils.Threading;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Charsets;
+import com.google.common.base.Stopwatch;
 import com.google.common.io.Resources;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -44,8 +50,10 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -54,6 +62,9 @@ import static com.google.common.base.Preconditions.checkState;
  * to a file which is then signed with your key.
  */
 public class BuildCheckpoints {
+	
+	private static final Logger log = LoggerFactory.getLogger(BuildCheckpoints.class);
+	
     private static NetworkParameters params;
 
     public static void main(String[] args) throws Exception {
@@ -71,21 +82,54 @@ public class BuildCheckpoints {
             return;
         }
 
-        final String suffix;
+        int port;
+        int interval;
+        
+        final String prefix;
         switch (netFlag.value(options)) {
             case MAIN:
             case PROD:
                 params = MainNetParams.get();
-                suffix = "";
+                prefix = params.getId();
+                port = params.getPort();
+                interval = params.getInterval();
                 break;
+                
             case TEST:
                 params = TestNet3Params.get();
-                suffix = "-testnet";
-                break;
+                prefix = params.getId();
+                port = params.getPort();
+				interval = params.getInterval();
+				break;
+                
             case REGTEST:
                 params = RegTestParams.get();
-                suffix = "-regtest";
+                prefix = "com.uniquid.regtest";
+                port = 19000;
+                interval = 2016;
                 break;
+            
+            case LCMAIN:
+            	params = LitecoinNetworkParameters.get();
+            	prefix = params.getId();
+            	port = 9333;
+				interval = params.getInterval();
+				break;
+            	
+            case LCTEST:
+            	params = TestLitecoinNetParams.get();
+            	prefix = "com.uniquid.litecointest";
+            	port = 19335;
+				interval = 2016;
+				break;
+            	
+            case LCREG:
+            	params = RegTestLitecoinNetParams.get();
+            	prefix = "com.uniquid.params.UniquidLitecoinRegTest";
+            	port = 19000;
+				interval = 2016;
+				break;
+            	
             default:
                 throw new RuntimeException("Unreachable.");
         }
@@ -103,7 +147,8 @@ public class BuildCheckpoints {
         } else {
             ipAddress = InetAddress.getLocalHost();
         }
-        final PeerAddress peerAddress = new PeerAddress(ipAddress, params.getPort());
+        //final PeerAddress peerAddress = new PeerAddress(ipAddress, params.getPort());
+        final PeerAddress peerAddress = new PeerAddress(ipAddress, port);
 
         // Sorted map of block height to StoredBlock object.
         final TreeMap<Integer, StoredBlock> checkpoints = new TreeMap<Integer, StoredBlock>();
@@ -113,8 +158,10 @@ public class BuildCheckpoints {
         final BlockStore store = new MemoryBlockStore(params);
         final BlockChain chain = new BlockChain(params, store);
         final PeerGroup peerGroup = new PeerGroup(params, chain);
+        
         System.out.println("Connecting to " + peerAddress + "...");
         peerGroup.addAddress(peerAddress);
+        
         long now = new Date().getTime() / 1000;
         peerGroup.setFastCatchupTimeSecs(now);
 
@@ -125,7 +172,19 @@ public class BuildCheckpoints {
             @Override
             public void notifyNewBestBlock(StoredBlock block) throws VerificationException {
                 int height = block.getHeight();
-                if (height % params.getInterval() == 0 && block.getHeader().getTimeSeconds() <= timeAgo) {
+                
+                if(height % 500 == 0) {
+                	System.out.println("height is now " + height);
+                }
+
+                if(params.equals(LitecoinNetworkParameters.get())
+						|| params.equals(TestLitecoinNetParams.get())
+						|| params.equals(RegTestLitecoinNetParams.get())
+				) {
+                	height += 1;
+				}
+
+                if (height % interval == 0 && block.getHeader().getTimeSeconds() <= timeAgo) {
                     System.out.println(String.format("Checkpointing block %s at height %d, time %s",
                             block.getHeader().getHash(), block.getHeight(), Utils.dateTimeFormat(block.getHeader().getTime())));
                     checkpoints.put(height, block);
@@ -134,12 +193,24 @@ public class BuildCheckpoints {
         });
 
         peerGroup.start();
+        
+        System.out.println("id = " + params.getId());
+        System.out.println("interval = " + interval);
+
+        Stopwatch sw = Stopwatch.createStarted();
+        
+        String date = new SimpleDateFormat("dd/MM/yyyy HH:mm:SS").format(new Date());
+        
+        System.out.println(date + " Starting download...");
         peerGroup.downloadBlockChain();
 
+        System.out.println("Checking state of checkpoints... " + checkpoints.size());
         checkState(checkpoints.size() > 0);
 
-        final File plainFile = new File("checkpoints" + suffix);
-        final File textFile = new File("checkpoints" + suffix + ".txt");
+        date = new SimpleDateFormat("dd/MM/yyyy HH:mm:SS").format(new Date());
+        System.out.println(date + " Creating files...");
+        final File plainFile = new File(prefix + ".uniquidcheckpoints");
+        final File textFile = new File(prefix + ".uniquidcheckpoints" + ".txt");
 
         // Write checkpoint data out.
         writeBinaryCheckpoints(checkpoints, plainFile);
@@ -148,9 +219,12 @@ public class BuildCheckpoints {
         peerGroup.stop();
         store.close();
 
+        System.out.println("File created in " + sw.elapsed(TimeUnit.SECONDS) + " sec");
+        
         // Sanity check the created files.
         sanityCheck(plainFile, checkpoints.size());
         sanityCheck(textFile, checkpoints.size());
+     
     }
 
     private static void writeBinaryCheckpoints(TreeMap<Integer, StoredBlock> checkpoints, File file) throws Exception {

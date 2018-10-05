@@ -20,30 +20,62 @@ public class LitecoinNetworkParameters extends NetworkParameters {
 	
 	private static final Logger log = LoggerFactory.getLogger(LitecoinNetworkParameters.class);
 	
+	public static final int MAINNET_MAJORITY_WINDOW = 1000;
+    public static final int MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED = 950;
+    public static final int MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE = 750;
+	
 	public LitecoinNetworkParameters() {
+		
+		id = "org.litecoin.main";
 		
 		alertSigningKey = Utils.HEX.decode("04302390343f91cc401d56d68b123028bf52e5fca1939df127f63c6467cdf9c8e2c14b61104cf817d0b780da337893ecc4aaff1309e536162dabbdb45200ca2b0a");
         
         targetTimespan = (int)(3.5 * 24 * 60 * 60);
         interval = targetTimespan/((int)(2.5 * 60));
+        
+        maxTarget = Utils.decodeCompactBits(0x1e0fffffL);
+        
+        addressHeader = 48;
+        p2shHeader = 5;
+        dumpedPrivateKeyHeader = 176;
+        
+        packetMagic = 0xfbc0b6dbL;
+        
+        acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
+        
+        bip32HeaderPub = 0x0488B21E;
+        bip32HeaderPriv = 0x0488ADE4;
+        
+        port = 9333;
 
         genesisBlock = new Block(this, Block.BLOCK_VERSION_GENESIS);
         genesisBlock.setDifficultyTarget(0x1e0ffff0L);
-        genesisBlock.setTime(1486949366L);
-        genesisBlock.setNonce(293345L);
+        genesisBlock.setTime(1317972665L);
+        genesisBlock.setNonce(2084524493L);
         genesisBlock.setMerkleRoot(Sha256Hash.wrap("97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9"));
         genesisBlock.setPrevBlockHash(Sha256Hash.ZERO_HASH);
         
         String genesisHash = genesisBlock.getHashAsString();
-        System.out.println("genesisHash: " + genesisHash);
         
-        checkState(genesisHash.equals("4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0"),
+        checkState(genesisHash.equals("12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"),
                 genesisBlock);
 
-        subsidyDecreaseBlockCount = 210000;		// TODO test with 840000
+        subsidyDecreaseBlockCount = 840000;		// TODO test with 840000
         
         addrSeeds = null;
-        dnsSeeds = null;
+//        dnsSeeds = null;
+        
+        dnsSeeds = new String[] {
+                "seed-a.litecoin.loshan.co.uk",
+                "dnsseed.thrasher.io",
+                "dnsseed.litecointools.com",
+                "dnsseed.litecoinpool.org",
+                "dnsseed.koin-project.com"
+        };
+        
+        majorityEnforceBlockUpgrade = MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
+        majorityRejectBlockOutdated = MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
+        majorityWindow = MAINNET_MAJORITY_WINDOW;
 
     }
 
@@ -143,6 +175,15 @@ public class LitecoinNetworkParameters extends NetworkParameters {
             return;
         }
 
+        // workaround to use checkpoints
+        StoredBlock previous = blockStore.get(prev.getHash());
+		for (int i = 0; i < 2; i++) {
+			if(previous == null) {
+				return;
+			}
+			previous = blockStore.get(previous.getHeader().getPrevBlockHash());
+		}
+
         // We need to find a block far back in the chain. It's OK that this is expensive because it only occurs every
         // two weeks after the initial block chain download.
         final Stopwatch watch = Stopwatch.createStarted();
@@ -154,7 +195,7 @@ public class LitecoinNetworkParameters extends NetworkParameters {
         if((storedPrev.getHeight() + 1) != this.getInterval()) {
         	blockstogoback = this.getInterval();
         }
-        
+
         for (int i = 0; i < blockstogoback; i++) {
             if (cursor == null) {
                 // This should never happen. If it does, it means we are following an incorrect or busted chain.
