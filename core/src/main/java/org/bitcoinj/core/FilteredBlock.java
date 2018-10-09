@@ -36,7 +36,7 @@ public class FilteredBlock extends Message {
     
     // A set of transactions whose hashes are a subset of getTransactionHashes()
     // These were relayed as a part of the filteredblock getdata, ie likely weren't previously received as loose transactions
-    private Map<Sha256Hash, Transaction> associatedTransactions = new HashMap<Sha256Hash, Transaction>();
+    private Map<Sha256Hash, Transaction> associatedTransactions = new HashMap<>();
     
     public FilteredBlock(NetworkParameters params, byte[] payloadBytes) throws ProtocolException {
         super(params, payloadBytes, 0);
@@ -70,13 +70,13 @@ public class FilteredBlock extends Message {
     
     /**
      * Gets a list of leaf hashes which are contained in the partial merkle tree in this filtered block
-     * 
-     * @throws ProtocolException If the partial merkle block is invalid or the merkle root of the partial merkle block doesnt match the block header
+     *
+     * @throws ProtocolException If the partial merkle block is invalid or the merkle root of the partial merkle block doesn't match the block header
      */
     public List<Sha256Hash> getTransactionHashes() throws VerificationException {
         if (cachedTransactionHashes != null)
             return Collections.unmodifiableList(cachedTransactionHashes);
-        List<Sha256Hash> hashesMatched = new LinkedList<Sha256Hash>();
+        List<Sha256Hash> hashesMatched = new LinkedList<>();
         if (header.getMerkleRoot().equals(merkleTree.getTxnHashAndMerkleRoot(hashesMatched))) {
             cachedTransactionHashes = hashesMatched;
             return Collections.unmodifiableList(cachedTransactionHashes);

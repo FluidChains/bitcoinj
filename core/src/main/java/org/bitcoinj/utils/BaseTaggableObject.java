@@ -1,4 +1,6 @@
 /*
+ * Copyright by the original author or authors.
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,7 +32,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class BaseTaggableObject implements TaggableObject {
     @Nullable protected Map<String, ByteString> tags;
 
-    /** {@inheritDoc} */
     @Override
     @Nullable
     public synchronized ByteString maybeGetTag(String tag) {
@@ -40,7 +41,6 @@ public class BaseTaggableObject implements TaggableObject {
             return tags.get(tag);
     }
 
-    /** {@inheritDoc} */
     @Override
     public ByteString getTag(String tag) {
         ByteString b = maybeGetTag(tag);
@@ -49,17 +49,15 @@ public class BaseTaggableObject implements TaggableObject {
         return b;
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized void setTag(String tag, ByteString value) {
         checkNotNull(tag);
         checkNotNull(value);
         if (tags == null)
-            tags = new HashMap<String, ByteString>();
+            tags = new HashMap<>();
         tags.put(tag, value);
     }
 
-    /** {@inheritDoc} */
     @Override
     public synchronized Map<String, ByteString> getTags() {
         if (tags != null)

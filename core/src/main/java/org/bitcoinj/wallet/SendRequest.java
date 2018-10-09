@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.bitcoin.protocols.payments.Protos.PaymentDetails;
 import org.bitcoinj.core.Address;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.ECKey;
@@ -58,14 +59,14 @@ public class SendRequest {
      *
      * <p>If there are already inputs to the transaction, make sure their out point has a connected output,
      * otherwise their value will be added to fee.  Also ensure they are either signed or are spendable by a wallet
-     * key, otherwise the behavior of {@link Wallet#completeTx(Wallet.SendRequest)} is undefined (likely
+     * key, otherwise the behavior of {@link Wallet#completeTx(SendRequest)} is undefined (likely
      * RuntimeException).</p>
      */
     public Transaction tx;
 
     /**
      * When emptyWallet is set, all coins selected by the coin selector are sent to the first output in tx
-     * (its value is ignored and set to {@link org.bitcoinj.wallet.Wallet#getBalance()} - the fees required
+     * (its value is ignored and set to {@link Wallet#getBalance()} - the fees required
      * for the transaction). Any additional outputs are removed.
      */
     public boolean emptyWallet = false;
@@ -115,7 +116,7 @@ public class SendRequest {
     public KeyParameter aesKey = null;
 
     /**
-     * If not null, the {@link org.bitcoinj.wallet.CoinSelector} to use instead of the wallets default. Coin selectors are
+     * If not null, the {@link CoinSelector} to use instead of the wallets default. Coin selectors are
      * responsible for choosing which transaction outputs (coins) in a wallet to use given the desired send value
      * amount.
      */
@@ -145,6 +146,12 @@ public class SendRequest {
      * of the payment request that initiated the transaction.
      */
     public String memo = null;
+
+    /**
+     * If false (default value), tx fee is paid by the sender If true, tx fee is paid by the recipient/s. If there is
+     * more than one recipient, the tx fee is split equally between them regardless of output value and size.
+     */
+    public boolean recipientsPayFees = false;
 
     // Tracks if this has been passed to wallet.completeTx already: just a safety check.
     boolean completed;
@@ -262,6 +269,7 @@ public class SendRequest {
         helper.add("aesKey", aesKey != null ? "set" : null); // careful to not leak the key
         helper.add("coinSelector", coinSelector);
         helper.add("shuffleOutputs", shuffleOutputs);
+        helper.add("recipientsPayFees", recipientsPayFees);
         return helper.toString();
     }
 }

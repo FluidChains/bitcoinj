@@ -23,7 +23,6 @@ public class TestLitecoinNetParams extends LitecoinNetworkParameters {
         addressHeader = 111;
         p2shHeader = 196;
         dumpedPrivateKeyHeader = 239;
-        acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
         port = 19335;
         packetMagic = 0xfdd2c8f1L;
         dumpedPrivateKeyHeader = 128 + addressHeader;
@@ -37,10 +36,12 @@ public class TestLitecoinNetParams extends LitecoinNetworkParameters {
                 "seed-b.litecoin.loshan.co.uk",
                 "dnsseed-testnet.thrasher.io"
         };
+
+		addrSeeds = null;
         
-        majorityEnforceBlockUpgrade = TestNet2Params.TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
-        majorityRejectBlockOutdated = TestNet2Params.TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
-        majorityWindow = TestNet2Params.TESTNET_MAJORITY_WINDOW;
+        majorityEnforceBlockUpgrade = TestNet3Params.TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
+        majorityRejectBlockOutdated = TestNet3Params.TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
+        majorityWindow = TestNet3Params.TESTNET_MAJORITY_WINDOW;
     }
 	
 	 @Override

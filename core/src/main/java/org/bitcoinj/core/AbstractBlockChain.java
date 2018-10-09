@@ -21,6 +21,7 @@ import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.*;
 import org.bitcoinj.core.listeners.*;
+import org.bitcoinj.script.ScriptException;
 import org.bitcoinj.store.*;
 import org.bitcoinj.utils.*;
 import org.bitcoinj.wallet.Wallet;
@@ -43,7 +44,7 @@ import static com.google.common.base.Preconditions.*;
  * <p>An AbstractBlockChain implementation must be connected to a {@link BlockStore} implementation. The chain object
  * by itself doesn't store any data, that's delegated to the store. Which store you use is a decision best made by
  * reading the getting started guide, but briefly, fully validating block chains need fully validating stores. In
- * the lightweight SPV mode, a {@link org.bitcoinj.store.SPVBlockStore} is the right choice.</p>
+ * the lightweight SPV mode, a {@link SPVBlockStore} is the right choice.</p>
  *
  * <p>This class implements an abstract class which makes it simple to create a BlockChain that does/doesn't do full
  * verification.  It verifies headers and is implements most of what is required to implement SPV mode, but
@@ -52,7 +53,7 @@ import static com.google.common.base.Preconditions.*;
  * <p>There are two subclasses of AbstractBlockChain that are useful: {@link BlockChain}, which is the simplest
  * class and implements <i>simplified payment verification</i>. This is a lightweight and efficient mode that does
  * not verify the contents of blocks, just their headers. A {@link FullPrunedBlockChain} paired with a
- * {@link org.bitcoinj.store.H2FullPrunedBlockStore} implements full verification, which is equivalent to
+ * {@link H2FullPrunedBlockStore} implements full verification, which is equivalent to
  * Bitcoin Core. To learn more about the alternative security models, please consult the articles on the
  * website.</p>
  *
@@ -121,7 +122,7 @@ public abstract class AbstractBlockChain {
     }
     // Holds blocks that we have received but can't plug into the chain yet, eg because they were created whilst we
     // were downloading the block chain.
-    private final LinkedHashMap<Sha256Hash, OrphanBlock> orphanBlocks = new LinkedHashMap<Sha256Hash, OrphanBlock>();
+    private final LinkedHashMap<Sha256Hash, OrphanBlock> orphanBlocks = new LinkedHashMap<>();
 
     /** False positive estimation uses a double exponential moving average. */
     public static final double FP_ESTIMATOR_ALPHA = 0.0001;
@@ -150,9 +151,9 @@ public abstract class AbstractBlockChain {
         log.info("chain head is at height {}:\n{}", chainHead.getHeight(), chainHead.getHeader());
         this.params = context.getParams();
 
-        this.newBestBlockListeners = new CopyOnWriteArrayList<ListenerRegistration<NewBestBlockListener>>();
-        this.reorganizeListeners = new CopyOnWriteArrayList<ListenerRegistration<ReorganizeListener>>();
-        this.transactionReceivedListeners = new CopyOnWriteArrayList<ListenerRegistration<TransactionReceivedInBlockListener>>();
+        this.newBestBlockListeners = new CopyOnWriteArrayList<>();
+        this.reorganizeListeners = new CopyOnWriteArrayList<>();
+        this.transactionReceivedListeners = new CopyOnWriteArrayList<>();
         for (NewBestBlockListener l : wallets) addNewBestBlockListener(Threading.SAME_THREAD, l);
         for (ReorganizeListener l : wallets) addReorganizeListener(Threading.SAME_THREAD, l);
         for (TransactionReceivedInBlockListener l : wallets) addTransactionReceivedListener(Threading.SAME_THREAD, l);
@@ -230,7 +231,7 @@ public abstract class AbstractBlockChain {
      * Adds a {@link NewBestBlockListener} listener to the chain.
      */
     public final void addNewBestBlockListener(Executor executor, NewBestBlockListener listener) {
-        newBestBlockListeners.add(new ListenerRegistration<NewBestBlockListener>(listener, executor));
+        newBestBlockListeners.add(new ListenerRegistration<>(listener, executor));
     }
 
     /**
@@ -244,7 +245,7 @@ public abstract class AbstractBlockChain {
      * Adds a generic {@link ReorganizeListener} listener to the chain.
      */
     public final void addReorganizeListener(Executor executor, ReorganizeListener listener) {
-        reorganizeListeners.add(new ListenerRegistration<ReorganizeListener>(listener, executor));
+        reorganizeListeners.add(new ListenerRegistration<>(listener, executor));
     }
 
     /**
@@ -258,7 +259,7 @@ public abstract class AbstractBlockChain {
      * Adds a generic {@link TransactionReceivedInBlockListener} listener to the chain.
      */
     public final void addTransactionReceivedListener(Executor executor, TransactionReceivedInBlockListener listener) {
-        transactionReceivedListeners.add(new ListenerRegistration<TransactionReceivedInBlockListener>(listener, executor));
+        transactionReceivedListeners.add(new ListenerRegistration<>(listener, executor));
     }
 
     /**
@@ -507,7 +508,7 @@ public abstract class AbstractBlockChain {
     public Set<Sha256Hash> drainOrphanBlocks() {
         lock.lock();
         try {
-            Set<Sha256Hash> hashes = new HashSet<Sha256Hash>(orphanBlocks.keySet());
+            Set<Sha256Hash> hashes = new HashSet<>(orphanBlocks.keySet());
             orphanBlocks.clear();
             return hashes;
         } finally {
@@ -819,7 +820,7 @@ public abstract class AbstractBlockChain {
      */
     private static LinkedList<StoredBlock> getPartialChain(StoredBlock higher, StoredBlock lower, BlockStore store) throws BlockStoreException {
         checkArgument(higher.getHeight() > lower.getHeight(), "higher and lower are reversed");
-        LinkedList<StoredBlock> results = new LinkedList<StoredBlock>();
+        LinkedList<StoredBlock> results = new LinkedList<>();
         StoredBlock cursor = higher;
         while (true) {
             results.add(cursor);

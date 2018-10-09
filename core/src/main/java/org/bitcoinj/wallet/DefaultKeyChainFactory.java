@@ -16,8 +16,6 @@
 
 package org.bitcoinj.wallet;
 
-import java.util.List;
-
 import org.bitcoinj.crypto.*;
 
 import com.google.common.collect.ImmutableList;
@@ -37,14 +35,13 @@ public class DefaultKeyChainFactory implements KeyChainFactory {
     }
 
     @Override
-    public DeterministicKeyChain makeKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicSeed seed, KeyCrypter crypter, boolean isMarried, String originalAccountPath) {
+    public DeterministicKeyChain makeKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicSeed seed,
+                                              KeyCrypter crypter, boolean isMarried, ImmutableList<ChildNumber> accountPath) {
         DeterministicKeyChain chain;
         if (isMarried)
             chain = new MarriedKeyChain(seed, crypter);
-        else {
-            List<ChildNumber> childNumber = HDUtils.parsePath(originalAccountPath);
-            chain = new DeterministicKeyChain(seed, crypter, ImmutableList.<ChildNumber>builder().addAll(childNumber).build());
-        }
+        else
+            chain = new DeterministicKeyChain(seed, crypter, accountPath);
         return chain;
     }
 
@@ -56,6 +53,17 @@ public class DefaultKeyChainFactory implements KeyChainFactory {
             chain = new MarriedKeyChain(accountKey);
         else
             chain = new DeterministicKeyChain(accountKey, isFollowingKey, accountKey.getPath());
+        return chain;
+    }
+
+    @Override
+    public DeterministicKeyChain makeSpendingKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicKey accountKey,
+                                                      boolean isMarried) throws UnreadableWalletException {
+        DeterministicKeyChain chain;
+        if (isMarried)
+            chain = new MarriedKeyChain(accountKey);
+        else
+            chain = DeterministicKeyChain.spend(accountKey);
         return chain;
     }
 }

@@ -18,6 +18,7 @@
 package org.bitcoinj.core;
 
 import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptException;
 import org.bitcoinj.wallet.DefaultRiskAnalysis;
 import org.bitcoinj.wallet.KeyBag;
 import org.bitcoinj.wallet.RedeemData;
@@ -46,6 +47,21 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class TransactionInput extends ChildMessage {
     /** Magic sequence number that indicates there is no sequence number. */
     public static final long NO_SEQUENCE = 0xFFFFFFFFL;
+    /**
+     * BIP68: If this flag set, sequence is NOT interpreted as a relative lock-time.
+     */
+    public static final long SEQUENCE_LOCKTIME_DISABLE_FLAG = 1L << 31;
+    /**
+     * BIP68: If sequence encodes a relative lock-time and this flag is set, the relative lock-time has units of 512
+     * seconds, otherwise it specifies blocks with a granularity of 1.
+     */
+    public static final long SEQUENCE_LOCKTIME_TYPE_FLAG = 1L << 22;
+    /**
+     * BIP68: If sequence encodes a relative lock-time, this mask is applied to extract that lock-time from the sequence
+     * field.
+     */
+    public static final long SEQUENCE_LOCKTIME_MASK = 0x0000ffff;
+
     private static final byte[] EMPTY_ARRAY = new byte[0];
     // Magic outpoint index that indicates the input is in fact unconnected.
     private static final long UNCONNECTED = 0xFFFFFFFFL;
@@ -64,6 +80,8 @@ public class TransactionInput extends ChildMessage {
     /** Value of the output connected to the input, if known. This field does not participate in equals()/hashCode(). */
     @Nullable
     private Coin value;
+
+    private TransactionWitness witness;
 
     /**
      * Creates an input that connects to nothing - used only in creation of coinbase transactions.
@@ -165,30 +183,16 @@ public class TransactionInput extends ChildMessage {
         Script script = scriptSig == null ? null : scriptSig.get();
         if (script == null) {
             script = new Script(scriptBytes);
-            scriptSig = new WeakReference<Script>(script);
+            scriptSig = new WeakReference<>(script);
         }
         return script;
     }
 
     /** Set the given program as the scriptSig that is supposed to satisfy the connected output script. */
     public void setScriptSig(Script scriptSig) {
-        this.scriptSig = new WeakReference<Script>(checkNotNull(scriptSig));
+        this.scriptSig = new WeakReference<>(checkNotNull(scriptSig));
         // TODO: This should all be cleaned up so we have a consistent internal representation.
         setScriptBytes(scriptSig.getProgram());
-    }
-
-    /**
-     * Convenience method that returns the from address of this input by parsing the scriptSig. The concept of a
-     * "from address" is not well defined in Bitcoin and you should not assume that senders of a transaction can
-     * actually receive coins on the same address they used to sign (e.g. this is not true for shared wallets).
-     */
-    @Deprecated
-    public Address getFromAddress() throws ScriptException {
-        if (isCoinBase()) {
-            throw new ScriptException(
-                    "This is a coinbase transaction which generates new coins. It does not have a from address.");
-        }
-        return getScriptSig().getFromAddress(params);
     }
 
     /**
@@ -263,6 +267,31 @@ public class TransactionInput extends ChildMessage {
         return value;
     }
 
+    /**
+     * Get the transaction witness of this input.
+     * 
+     * @return the witness of the input
+     */
+    public TransactionWitness getWitness() {
+        return witness != null ? witness : TransactionWitness.EMPTY;
+    }
+
+    /**
+     * Set the transaction witness of an input.
+     */
+    public void setWitness(TransactionWitness witness) {
+        this.witness = witness;
+    }
+
+    /**
+     * Determine if the transaction has witnesses.
+     * 
+     * @return true if the transaction has witnesses
+     */
+    public boolean hasWitness() {
+        return witness != null && witness.getPushCount() != 0;
+    }
+
     public enum ConnectionResult {
         NO_SUCH_TX,
         ALREADY_SPENT,
@@ -286,7 +315,7 @@ public class TransactionInput extends ChildMessage {
 
     /**
      * Alias for getOutpoint().getConnectedRedeemData(keyBag)
-     * @see TransactionOutPoint#getConnectedRedeemData(org.bitcoinj.wallet.KeyBag)
+     * @see TransactionOutPoint#getConnectedRedeemData(KeyBag)
      */
     @Nullable
     public RedeemData getConnectedRedeemData(KeyBag keyBag) throws ScriptException {
@@ -304,7 +333,7 @@ public class TransactionInput extends ChildMessage {
      * Connecting means updating the internal pointers and spent flags. If the mode is to ABORT_ON_CONFLICT then
      * the spent output won't be changed, but the outpoint.fromTx pointer will still be updated.
      *
-     * @param transactions Map of txhash->transaction.
+     * @param transactions Map of txhash to transaction.
      * @param mode   Whether to abort if there's a pre-existing connection or not.
      * @return NO_SUCH_TX if the prevtx wasn't found, ALREADY_SPENT if there was a conflict, SUCCESS if not.
      */
@@ -359,11 +388,23 @@ public class TransactionInput extends ChildMessage {
      * @return true if the disconnection took place, false if it was not connected.
      */
     public boolean disconnect() {
-        if (outpoint.fromTx == null) return false;
-        TransactionOutput output = outpoint.fromTx.getOutput((int) outpoint.getIndex());
-        if (output.getSpentBy() == this) {
-            output.markAsUnspent();
+        TransactionOutput connectedOutput;
+        if (outpoint.fromTx != null) {
+            // The outpoint is connected using a "standard" wallet, disconnect it.
+            connectedOutput = outpoint.fromTx.getOutput((int) outpoint.getIndex());
             outpoint.fromTx = null;
+        } else if (outpoint.connectedOutput != null) {
+            // The outpoint is connected using a UTXO based wallet, disconnect it.
+            connectedOutput = outpoint.connectedOutput;
+            outpoint.connectedOutput = null;
+        } else {
+            // The outpoint is not connected, do nothing.
+            return false;
+        }
+
+        if (connectedOutput != null && connectedOutput.getSpentBy() == this) {
+            // The outpoint was connected to an output, disconnect the output.
+            connectedOutput.markAsUnspent();
             return true;
         } else {
             return false;
@@ -383,6 +424,14 @@ public class TransactionInput extends ChildMessage {
      */
     public boolean isOptInFullRBF() {
         return sequence < NO_SEQUENCE - 1;
+    }
+
+    /**
+     * Returns whether this input, if it belongs to a version 2 (or higher) transaction, has
+     * <a href="https://github.com/bitcoin/bips/blob/master/bip-0068.mediawiki">relative lock-time</a> enabled.
+     */
+    public boolean hasRelativeLockTime() {
+        return (sequence & SEQUENCE_LOCKTIME_DISABLE_FLAG) == 0;
     }
 
     /**
@@ -479,7 +528,7 @@ public class TransactionInput extends ChildMessage {
                 s.append(": COINBASE");
             } else {
                 s.append(" for [").append(outpoint).append("]: ").append(getScriptSig());
-                String flags = Joiner.on(", ").skipNulls().join(
+                String flags = Joiner.on(", ").skipNulls().join(hasWitness() ? "witness" : null,
                         hasSequence() ? "sequence: " + Long.toHexString(sequence) : null,
                         isOptInFullRBF() ? "opts into full RBF" : null);
                 if (!flags.isEmpty())

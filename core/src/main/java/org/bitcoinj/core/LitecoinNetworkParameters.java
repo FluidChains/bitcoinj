@@ -40,9 +40,9 @@ public class LitecoinNetworkParameters extends NetworkParameters {
         dumpedPrivateKeyHeader = 176;
         
         packetMagic = 0xfbc0b6dbL;
-        
-        acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
-        
+
+//        acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
+
         bip32HeaderPub = 0x0488B21E;
         bip32HeaderPriv = 0x0488ADE4;
         

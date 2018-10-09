@@ -36,22 +36,20 @@ public class AddressMessage extends Message {
     private List<PeerAddress> addresses;
 
     /**
-     * Contruct a new 'addr' message.
+     * Construct a new 'addr' message.
      * @param params NetworkParameters object.
      * @param offset The location of the first payload byte within the array.
-     * @param parseRetain Whether to retain the backing byte array for quick reserialization.  
-     * If true and the backing byte array is invalidated due to modification of a field then 
-     * the cached bytes may be repopulated and retained if the message is serialized again in the future.
+     * @param serializer the serializer to use for this block.
      * @param length The length of message if known.  Usually this is provided when deserializing of the wire
      * as the length will be provided as part of the header.  If unknown then set to Message.UNKNOWN_LENGTH
      * @throws ProtocolException
      */
-    AddressMessage(NetworkParameters params, byte[] payload, int offset, MessageSerializer setSerializer, int length) throws ProtocolException {
-        super(params, payload, offset, setSerializer, length);
+    AddressMessage(NetworkParameters params, byte[] payload, int offset, MessageSerializer serializer, int length) throws ProtocolException {
+        super(params, payload, offset, serializer, length);
     }
 
     /**
-     * Contruct a new 'addr' message.
+     * Construct a new 'addr' message.
      * @param params NetworkParameters object.
      * @param serializer the serializer to use for this block.
      * @param length The length of message if known.  Usually this is provided when deserializing of the wire
@@ -76,7 +74,7 @@ public class AddressMessage extends Message {
         // Guard against ultra large messages that will crash us.
         if (numAddresses > MAX_ADDRESSES)
             throw new ProtocolException("Address message too large.");
-        addresses = new ArrayList<PeerAddress>((int) numAddresses);
+        addresses = new ArrayList<>((int) numAddresses);
         for (int i = 0; i < numAddresses; i++) {
             PeerAddress addr = new PeerAddress(params, payload, cursor, protocolVersion, this, serializer);
             addresses.add(addr);
@@ -126,6 +124,6 @@ public class AddressMessage extends Message {
 
     @Override
     public String toString() {
-        return "addr: " + Utils.join(addresses);
+        return "addr: " + Utils.SPACE_JOINER.join(addresses);
     }
 }
