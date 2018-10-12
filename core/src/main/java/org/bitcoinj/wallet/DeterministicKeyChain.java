@@ -392,7 +392,7 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
 	 * Creates a key chain that watches the given account key.
 	 */
 	public static DeterministicKeyChain watch(DeterministicKey accountKey) {
-		return new DeterministicKeyChain(accountKey);
+		return watch(accountKey, ACCOUNT_ZERO_PATH);
 	}
 
 	/**
@@ -422,7 +422,7 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
 	 */
 	protected DeterministicKeyChain(DeterministicSeed seed, @Nullable KeyCrypter crypter,
 									ImmutableList<ChildNumber> accountPath) {
-		this.accountPath = accountPath;
+		setAccountPath(accountPath);
 		this.seed = seed;
 		basicKeyChain = new BasicKeyChain(crypter);
 		if (!seed.isEncrypted()) {
@@ -452,7 +452,7 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
 		checkNotNull(chain.seed);
 
 		checkArgument(!chain.rootKey.isEncrypted(), "Chain already encrypted");
-		this.accountPath = chain.getAccountPath();
+		setAccountPath(chain.getAccountPath());
 
 		this.issuedExternalKeys = chain.issuedExternalKeys;
 		this.issuedInternalKeys = chain.issuedInternalKeys;

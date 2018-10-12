@@ -2298,6 +2298,10 @@ public class Wallet extends BaseTaggableObject
 				}
 			}
 
+			if ((result == TransactionInput.ConnectionResult.ALREADY_SPENT) && isWatching()) {
+				result = TransactionInput.ConnectionResult.SUCCESS;
+			}
+
 			TransactionOutput output = checkNotNull(input.getConnectedOutput());
 			if (result == TransactionInput.ConnectionResult.ALREADY_SPENT) {
 				if (fromChain) {
