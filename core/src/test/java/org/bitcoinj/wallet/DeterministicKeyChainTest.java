@@ -152,12 +152,17 @@ public class DeterministicKeyChainTest {
         KeyChainFactory factory = new KeyChainFactory() {
             @Override
             public DeterministicKeyChain makeKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicSeed seed,
-                                                      KeyCrypter crypter, boolean isMarried, ImmutableList<ChildNumber> accountPath) {
+                                                      KeyCrypter crypter, boolean isMarried) {
                 return new AccountOneChain(crypter, seed);
             }
 
             @Override
-            public DeterministicKeyChain makeKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicSeed seed, KeyCrypter crypter, boolean isMarried) {
+            public DeterministicKeyChain makeKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicSeed seed, KeyCrypter crypter, boolean isMarried, ImmutableList<ChildNumber> accountPath) {
+                return new AccountOneChain(crypter, seed);
+            }
+
+            @Override
+            public DeterministicKeyChain makeKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicSeed seed, KeyCrypter crypter, boolean isMarried, String originalAccountPath) {
                 return new AccountOneChain(crypter, seed);
             }
 
