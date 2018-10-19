@@ -131,7 +131,7 @@ public class BuildCheckpoints {
             	
             case LCREG:
             	params = RegTestLitecoinNetParams.get();
-            	prefix = "com.uniquid.params.UniquidLitecoinRegTest";
+            	prefix = "com.uniquid.litecoinregtest";
             	port = 19000;
 				interval = 2016;
 				break;
