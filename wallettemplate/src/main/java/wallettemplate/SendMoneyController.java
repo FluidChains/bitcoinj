@@ -23,11 +23,13 @@ import org.bitcoinj.wallet.Wallet;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
+
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 import wallettemplate.controls.BitcoinAddressValidator;
 import wallettemplate.utils.TextFieldValidator;
 import wallettemplate.utils.WTUtils;
@@ -58,6 +60,7 @@ public class SendMoneyController {
         new TextFieldValidator(amountEdit, text ->
                 !WTUtils.didThrow(() -> checkState(Coin.parseCoin(text).compareTo(balance) <= 0)));
         amountEdit.setText(balance.toPlainString());
+        address.setPromptText(Address.fromKey(Main.params, new ECKey(), Main.PREFERRED_OUTPUT_SCRIPT_TYPE).toString());
     }
 
     public void cancel(ActionEvent event) {
@@ -68,7 +71,7 @@ public class SendMoneyController {
         // Address exception cannot happen as we validated it beforehand.
         try {
             Coin amount = Coin.parseCoin(amountEdit.getText());
-            LegacyAddress destination = LegacyAddress.fromBase58(Main.params, address.getText());
+            Address destination = Address.fromString(Main.params, address.getText());
             SendRequest req;
             if (amount.equals(Main.bitcoin.wallet().getBalance()))
                 req = SendRequest.emptyWallet(destination);
@@ -88,7 +91,7 @@ public class SendMoneyController {
                     // We died trying to empty the wallet.
                     crashAlert(t);
                 }
-            });
+            }, MoreExecutors.directExecutor());
             sendResult.tx.getConfidence().addEventListener((tx, reason) -> {
                 if (reason == TransactionConfidence.Listener.ChangeReason.SEEN_PEERS)
                     updateTitleForBroadcast();

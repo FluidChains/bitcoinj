@@ -68,9 +68,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * to a file which is then signed with your key.
  */
 public class BuildCheckpoints {
-	
-	private static final Logger log = LoggerFactory.getLogger(BuildCheckpoints.class);
-	
+
+    private static final Logger log = LoggerFactory.getLogger(BuildCheckpoints.class);
+
     private static NetworkParameters params;
 
     public static void main(String[] args) throws Exception {
@@ -90,7 +90,7 @@ public class BuildCheckpoints {
 
         int port;
         int interval;
-        
+
         final String prefix;
         switch (netFlag.value(options)) {
             case MAIN:
@@ -100,42 +100,42 @@ public class BuildCheckpoints {
                 port = params.getPort();
                 interval = params.getInterval();
                 break;
-                
+
             case TEST:
                 params = TestNet3Params.get();
                 prefix = params.getId();
                 port = params.getPort();
-				interval = params.getInterval();
-				break;
-                
+                interval = params.getInterval();
+                break;
+
             case REGTEST:
                 params = RegTestParams.get();
                 prefix = "com.uniquid.regtest";
                 port = 19000;
                 interval = 2016;
                 break;
-            
+
             case LCMAIN:
-            	params = LitecoinNetworkParameters.get();
-            	prefix = params.getId();
-            	port = 9333;
-				interval = params.getInterval();
-				break;
-            	
+                params = LitecoinNetworkParameters.get();
+                prefix = params.getId();
+                port = 9333;
+                interval = params.getInterval();
+                break;
+
             case LCTEST:
-            	params = TestLitecoinNetParams.get();
-            	prefix = "com.uniquid.litecointest";
-            	port = 19335;
-				interval = 2016;
-				break;
-            	
+                params = TestLitecoinNetParams.get();
+                prefix = "com.uniquid.litecointest";
+                port = 19335;
+                interval = 2016;
+                break;
+
             case LCREG:
-            	params = RegTestLitecoinNetParams.get();
-            	prefix = "com.uniquid.litecoinregtest";
-            	port = 19000;
-				interval = 2016;
-				break;
-            	
+                params = RegTestLitecoinNetParams.get();
+                prefix = "com.uniquid.litecoinregtest";
+                port = 19000;
+                interval = 2016;
+                break;
+
             default:
                 throw new RuntimeException("Unreachable.");
         }
@@ -192,17 +192,13 @@ public class BuildCheckpoints {
             @Override
             public void notifyNewBestBlock(StoredBlock block) throws VerificationException {
                 int height = block.getHeight();
-                
-                if(height % 500 == 0) {
-                	System.out.println("height is now " + height);
-                }
 
                 if(params.equals(LitecoinNetworkParameters.get())
-						|| params.equals(TestLitecoinNetParams.get())
-						|| params.equals(RegTestLitecoinNetParams.get())
-				) {
-                	height += 1;
-				}
+                        || params.equals(TestLitecoinNetParams.get())
+                        || params.equals(RegTestLitecoinNetParams.get())
+                ) {
+                    height += 1;
+                }
 
                 if (height % interval == 0 && block.getHeader().getTimeSeconds() <= timeAgo) {
                     System.out.println(String.format("Checkpointing block %s at height %d, time %s",
@@ -217,9 +213,9 @@ public class BuildCheckpoints {
         System.out.println("interval = " + interval);
 
         Stopwatch sw = Stopwatch.createStarted();
-        
+
         String date = new SimpleDateFormat("dd/MM/yyyy HH:mm:SS").format(new Date());
-        
+
         System.out.println(date + " Starting download...");
 
         peerGroup.downloadBlockChain();
@@ -240,50 +236,50 @@ public class BuildCheckpoints {
         store.close();
 
         System.out.println("File created in " + sw.elapsed(TimeUnit.SECONDS) + " sec");
-        
+
         // Sanity check the created files.
         sanityCheck(plainFile, checkpoints.size());
         sanityCheck(textFile, checkpoints.size());
-     
+
     }
 
     private static void writeBinaryCheckpoints(TreeMap<Integer, StoredBlock> checkpoints, File file) throws Exception {
-        final FileOutputStream fileOutputStream = new FileOutputStream(file, false);
         MessageDigest digest = Sha256Hash.newDigest();
-        final DigestOutputStream digestOutputStream = new DigestOutputStream(fileOutputStream, digest);
-        digestOutputStream.on(false);
-        final DataOutputStream dataOutputStream = new DataOutputStream(digestOutputStream);
-        dataOutputStream.writeBytes("CHECKPOINTS 1");
-        dataOutputStream.writeInt(0);  // Number of signatures to read. Do this later.
-        digestOutputStream.on(true);
-        dataOutputStream.writeInt(checkpoints.size());
-        ByteBuffer buffer = ByteBuffer.allocate(StoredBlock.COMPACT_SERIALIZED_SIZE);
-        for (StoredBlock block : checkpoints.values()) {
-            block.serializeCompact(buffer);
-            dataOutputStream.write(buffer.array());
-            buffer.position(0);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file, false);
+             DigestOutputStream digestOutputStream = new DigestOutputStream(fileOutputStream, digest);
+             DataOutputStream dataOutputStream = new DataOutputStream(digestOutputStream)) {
+            digestOutputStream.on(false);
+            dataOutputStream.writeBytes("CHECKPOINTS 1");
+            dataOutputStream.writeInt(0); // Number of signatures to read. Do this later.
+            digestOutputStream.on(true);
+            dataOutputStream.writeInt(checkpoints.size());
+            ByteBuffer buffer = ByteBuffer.allocate(StoredBlock.COMPACT_SERIALIZED_SIZE);
+            for (StoredBlock block : checkpoints.values()) {
+                block.serializeCompact(buffer);
+                dataOutputStream.write(buffer.array());
+                buffer.position(0);
+            }
+            Sha256Hash checkpointsHash = Sha256Hash.wrap(digest.digest());
+            System.out.println("Hash of checkpoints data is " + checkpointsHash);
+            System.out.println("Checkpoints written to '" + file.getCanonicalPath() + "'.");
         }
-        dataOutputStream.close();
-        Sha256Hash checkpointsHash = Sha256Hash.wrap(digest.digest());
-        System.out.println("Hash of checkpoints data is " + checkpointsHash);
-        digestOutputStream.close();
-        fileOutputStream.close();
-        System.out.println("Checkpoints written to '" + file.getCanonicalPath() + "'.");
     }
 
-    private static void writeTextualCheckpoints(TreeMap<Integer, StoredBlock> checkpoints, File file) throws IOException {
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.US_ASCII));
-        writer.println("TXT CHECKPOINTS 1");
-        writer.println("0"); // Number of signatures to read. Do this later.
-        writer.println(checkpoints.size());
-        ByteBuffer buffer = ByteBuffer.allocate(StoredBlock.COMPACT_SERIALIZED_SIZE);
-        for (StoredBlock block : checkpoints.values()) {
-            block.serializeCompact(buffer);
-            writer.println(CheckpointManager.BASE64.encode(buffer.array()));
-            buffer.position(0);
+    private static void writeTextualCheckpoints(TreeMap<Integer, StoredBlock> checkpoints, File file)
+            throws IOException {
+        try (PrintWriter writer = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.US_ASCII))) {
+            writer.println("TXT CHECKPOINTS 1");
+            writer.println("0"); // Number of signatures to read. Do this later.
+            writer.println(checkpoints.size());
+            ByteBuffer buffer = ByteBuffer.allocate(StoredBlock.COMPACT_SERIALIZED_SIZE);
+            for (StoredBlock block : checkpoints.values()) {
+                block.serializeCompact(buffer);
+                writer.println(CheckpointManager.BASE64.encode(buffer.array()));
+                buffer.position(0);
+            }
+            System.out.println("Checkpoints written to '" + file.getCanonicalPath() + "'.");
         }
-        writer.close();
-        System.out.println("Checkpoints written to '" + file.getCanonicalPath() + "'.");
     }
 
     private static void sanityCheck(File file, int expectedSize) throws IOException {

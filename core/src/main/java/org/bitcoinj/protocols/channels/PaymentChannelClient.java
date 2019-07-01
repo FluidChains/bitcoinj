@@ -31,7 +31,7 @@ import com.google.protobuf.ByteString;
 import net.jcip.annotations.GuardedBy;
 import org.bitcoin.paymentchannel.Protos;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.locks.ReentrantLock;
@@ -349,7 +349,8 @@ public class PaymentChannelClient implements IPaymentChannelClient {
     }
 
     @GuardedBy("lock")
-    private void receiveRefund(Protos.TwoWayChannelMessage refundMsg, @Nullable KeyParameter userKey) throws SignatureDecodeException, VerificationException {
+    private void receiveRefund(Protos.TwoWayChannelMessage refundMsg, @Nullable KeyParameter userKey)
+            throws SignatureDecodeException, VerificationException {
         checkState(majorVersion == 1);
         checkState(step == InitStep.WAITING_FOR_REFUND_RETURN && refundMsg.hasReturnRefund());
         log.info("Got RETURN_REFUND message, providing signed contract");
@@ -510,7 +511,7 @@ public class PaymentChannelClient implements IPaymentChannelClient {
         checkState(lock.isHeldByCurrentThread());
         if (msg.hasSettlement()) {
             Transaction settleTx = wallet.getParams().getDefaultSerializer().makeTransaction(msg.getSettlement().getTx().toByteArray());
-            log.info("CLOSE message received with settlement tx {}", settleTx.getHash());
+            log.info("CLOSE message received with settlement tx {}", settleTx.getTxId());
             // TODO: set source
             if (state != null && state().isSettlementTransaction(settleTx)) {
                 // The wallet has a listener on it that the state object will use to do the right thing at this
@@ -601,8 +602,8 @@ public class PaymentChannelClient implements IPaymentChannelClient {
                     .setTimeWindowSecs(timeWindow);
 
             if (storedChannel != null) {
-                versionNegotiationBuilder.setPreviousChannelContractHash(ByteString.copyFrom(storedChannel.contract.getHash().getBytes()));
-                log.info("Begun version handshake, attempting to reopen channel with contract hash {}", storedChannel.contract.getHash());
+                versionNegotiationBuilder.setPreviousChannelContractHash(ByteString.copyFrom(storedChannel.contract.getTxId().getBytes()));
+                log.info("Begun version handshake, attempting to reopen channel with contract hash {}", storedChannel.contract.getTxId());
             } else
                 log.info("Begun version handshake creating new channel");
 

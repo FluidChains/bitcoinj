@@ -14,14 +14,32 @@
 
 package org.bitcoinj.core;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.bitcoinj.crypto.TransactionSignature;
+
 public class TransactionWitness {
     public static final TransactionWitness EMPTY = new TransactionWitness(0);
+
+    /**
+     * Creates the stack pushes necessary to redeem a P2WPKH output. If given signature is null, an empty push will be
+     * used as a placeholder.
+     */
+    public static TransactionWitness redeemP2WPKH(@Nullable TransactionSignature signature, ECKey pubKey) {
+        checkArgument(pubKey.isCompressed(), "only compressed keys allowed");
+        TransactionWitness witness = new TransactionWitness(2);
+        witness.setPush(0, signature != null ? signature.encodeToBitcoin() : new byte[0]); // signature
+        witness.setPush(1, pubKey.getPubKey()); // pubkey
+        return witness;
+    }
 
     private final List<byte[]> pushes;
 
@@ -55,9 +73,8 @@ public class TransactionWitness {
 
     @Override
     public String toString() {
-        List<String> stringPushes = new ArrayList<>();
-        for (int j = 0; j < this.getPushCount(); j++) {
-            byte[] push = this.getPush(j);
+        List<String> stringPushes = new ArrayList<>(pushes.size());
+        for (byte[] push : pushes) {
             if (push == null) {
                 stringPushes.add("NULL");
             } else if (push.length == 0) {

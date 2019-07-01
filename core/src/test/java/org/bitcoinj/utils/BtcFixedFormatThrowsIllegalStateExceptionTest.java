@@ -1,6 +1,6 @@
 /*
- * Copyright by the original author or authors.
- * 
+ * Copyright 2019 Tim Strasser
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package org.bitcoinj.core.listeners;
+package org.bitcoinj.utils;
 
-/**
- * Old interface for backwards compatibility. Implement the more specific interfaces instead.
- */
-@Deprecated
-public interface BlockChainListener extends NewBestBlockListener, TransactionReceivedInBlockListener, ReorganizeListener {
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Locale;
+
+import org.junit.Test;
+
+public class BtcFixedFormatThrowsIllegalStateExceptionTest {
+
+    @Test(expected = IllegalStateException.class)
+    public void testScaleThrowsIllegalStateException() {
+        BtcFixedFormat btcFixedFormat = new BtcFixedFormat(Locale.getDefault(), BtcFormat.MILLICOIN_SCALE, 2,
+                new ArrayList<Integer>());
+        btcFixedFormat.scale(new BigInteger("2000"), 0);
+    }
 }

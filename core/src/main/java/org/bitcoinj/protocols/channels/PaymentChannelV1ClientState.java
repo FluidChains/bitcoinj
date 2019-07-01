@@ -27,7 +27,7 @@ import org.bitcoinj.script.ScriptException;
 import org.bitcoinj.wallet.AllowUnconfirmedCoinSelector;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
@@ -170,8 +170,8 @@ public class PaymentChannelV1ClientState extends PaymentChannelClientState {
             refundFees = multisigFee;
         }
         refundTx.getConfidence().setSource(TransactionConfidence.Source.SELF);
-        log.info("initiated channel with multi-sig contract {}, refund {}", multisigContract.getHashAsString(),
-                refundTx.getHashAsString());
+        log.info("initiated channel with multi-sig contract {}, refund {}", multisigContract.getTxId(),
+                refundTx.getTxId());
         stateMachine.transition(State.INITIATED);
         // Client should now call getIncompleteRefundTransaction() and send it to the server.
     }
@@ -267,7 +267,7 @@ public class PaymentChannelV1ClientState extends PaymentChannelClientState {
         StoredPaymentChannelClientStates channels = (StoredPaymentChannelClientStates)
                 wallet.getExtensions().get(StoredPaymentChannelClientStates.EXTENSION_ID);
         checkNotNull(channels, "You have not added the StoredPaymentChannelClientStates extension to the wallet.");
-        checkState(channels.getChannel(id, multisigContract.getHash()) == null);
+        checkState(channels.getChannel(id, multisigContract.getTxId()) == null);
         storedChannel = new StoredClientChannel(getMajorVersion(), id, multisigContract, refundTx, myKey, serverKey, valueToMe, refundFees, 0, true);
         channels.putChannel(storedChannel);
     }

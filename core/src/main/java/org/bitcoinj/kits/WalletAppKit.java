@@ -25,6 +25,7 @@ import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.net.discovery.*;
 import org.bitcoinj.protocols.channels.*;
+import org.bitcoinj.script.Script;
 import org.bitcoinj.store.*;
 import org.bitcoinj.wallet.*;
 import org.slf4j.*;
@@ -63,10 +64,12 @@ import static com.google.common.base.Preconditions.*;
 public class WalletAppKit extends AbstractIdleService {
     protected static final Logger log = LoggerFactory.getLogger(WalletAppKit.class);
 
-    protected final String filePrefix;
     protected final NetworkParameters params;
+    protected final Script.ScriptType preferredOutputScriptType;
+    protected final KeyChainGroupStructure structure;
+    protected final String filePrefix;
     protected volatile BlockChain vChain;
-    protected volatile BlockStore vStore;
+    protected volatile SPVBlockStore vStore;
     protected volatile Wallet vWallet;
     protected volatile PeerGroup vPeerGroup;
 
@@ -91,15 +94,26 @@ public class WalletAppKit extends AbstractIdleService {
      * Creates a new WalletAppKit, with a newly created {@link Context}. Files will be stored in the given directory.
      */
     public WalletAppKit(NetworkParameters params, File directory, String filePrefix) {
-        this(new Context(params), directory, filePrefix);
+        this(new Context(params), Script.ScriptType.P2PKH, null, directory, filePrefix);
+    }
+
+    /**
+     * Creates a new WalletAppKit, with a newly created {@link Context}. Files will be stored in the given directory.
+     */
+    public WalletAppKit(NetworkParameters params, Script.ScriptType preferredOutputScriptType,
+            @Nullable KeyChainGroupStructure structure, File directory, String filePrefix) {
+        this(new Context(params), preferredOutputScriptType, structure, directory, filePrefix);
     }
 
     /**
      * Creates a new WalletAppKit, with the given {@link Context}. Files will be stored in the given directory.
      */
-    public WalletAppKit(Context context, File directory, String filePrefix) {
+    public WalletAppKit(Context context, Script.ScriptType preferredOutputScriptType,
+            @Nullable KeyChainGroupStructure structure, File directory, String filePrefix) {
         this.context = context;
         this.params = checkNotNull(context.getParams());
+        this.preferredOutputScriptType = checkNotNull(preferredOutputScriptType);
+        this.structure = structure != null ? structure : KeyChainGroupStructure.DEFAULT;
         this.directory = checkNotNull(directory);
         this.filePrefix = checkNotNull(filePrefix);
     }
@@ -232,13 +246,6 @@ public class WalletAppKit extends AbstractIdleService {
     }
 
     /**
-     * Override this to use a {@link BlockStore} that isn't the default of {@link SPVBlockStore}.
-     */
-    protected BlockStore provideBlockStore(File file) throws BlockStoreException {
-        return new SPVBlockStore(params, file);
-    }
-
-    /**
      * This method is invoked on a background thread after all objects are initialised, but before the peer group
      * or block chain download is started. You can tweak the objects configuration here.
      */
@@ -287,7 +294,7 @@ public class WalletAppKit extends AbstractIdleService {
             vWallet = createOrLoadWallet(shouldReplayWallet);
 
             // Initiate Bitcoin network objects (block store, blockchain and peer group)
-            vStore = provideBlockStore(chainFile);
+            vStore = new SPVBlockStore(params, chainFile);
             if (!chainFileExists || restoreFromSeed != null || restoreFromKey != null) {
                 if (checkpoints == null && !Utils.isAndroidRuntime()) {
                     checkpoints = CheckpointManager.openStream(params);
@@ -299,20 +306,14 @@ public class WalletAppKit extends AbstractIdleService {
                     if (restoreFromSeed != null) {
                         time = restoreFromSeed.getCreationTimeSeconds();
                         if (chainFileExists) {
-                            log.info("Deleting the chain file in preparation from restore.");
-                            vStore.close();
-                            if (!chainFile.delete())
-                                throw new IOException("Failed to delete chain file in preparation for restore.");
-                            vStore = new SPVBlockStore(params, chainFile);
+                            log.info("Clearing the chain file in preparation for restore.");
+                            vStore.clear();
                         }
                     } else if (restoreFromKey != null) {
                         time = restoreFromKey.getCreationTimeSeconds();
                         if (chainFileExists) {
-                            log.info("Deleting the chain file in preparation from restore.");
-                            vStore.close();
-                            if (!chainFile.delete())
-                                throw new IOException("Failed to delete chain file in preparation for restore.");
-                            vStore = new SPVBlockStore(params, chainFile);
+                            log.info("Clearing the chain file in preparation for restore.");
+                            vStore.clear();
                         }
                     }
                     else
@@ -324,11 +325,8 @@ public class WalletAppKit extends AbstractIdleService {
                     else
                         log.warn("Creating a new uncheckpointed block store due to a wallet with a creation time of zero: this will result in a very slow chain sync");
                 } else if (chainFileExists) {
-                    log.info("Deleting the chain file in preparation from restore.");
-                    vStore.close();
-                    if (!chainFile.delete())
-                        throw new IOException("Failed to delete chain file in preparation for restore.");
-                    vStore = new SPVBlockStore(params, chainFile);
+                    log.info("Clearing the chain file in preparation for restore.");
+                    vStore.clear();
                 }
             }
             vChain = new BlockChain(params, vStore);
@@ -373,7 +371,7 @@ public class WalletAppKit extends AbstractIdleService {
                         throw new RuntimeException(t);
 
                     }
-                });
+                }, MoreExecutors.directExecutor());
             }
         } catch (BlockStoreException e) {
             throw new IOException(e);
@@ -434,23 +432,22 @@ public class WalletAppKit extends AbstractIdleService {
     }
 
     protected Wallet createWallet() {
-        KeyChainGroup kcg;
+        KeyChainGroup.Builder kcg = KeyChainGroup.builder(params, structure);
         if (restoreFromSeed != null)
-            kcg = new KeyChainGroup(params, restoreFromSeed);
+            kcg.fromSeed(restoreFromSeed, preferredOutputScriptType);
         else if (restoreFromKey != null)
-            kcg = new KeyChainGroup(params, restoreFromKey, false);
+            kcg.addChain(DeterministicKeyChain.builder().spend(restoreFromKey).outputScriptType(preferredOutputScriptType).build());
         else
-            kcg = new KeyChainGroup(params);
+            kcg.fromRandom(preferredOutputScriptType);
         if (walletFactory != null) {
-            return walletFactory.create(params, kcg);
+            return walletFactory.create(params, kcg.build());
         } else {
-            return new Wallet(params, kcg);  // default
+            return new Wallet(params, kcg.build()); // default
         }
     }
 
     private void maybeMoveOldWalletOutOfTheWay() {
-        if (restoreFromSeed == null) return;
-        if (restoreFromKey == null) return;
+        if (restoreFromSeed == null && restoreFromKey == null) return;
         if (!vWalletFile.exists()) return;
         int counter = 1;
         File newName;
@@ -483,7 +480,7 @@ public class WalletAppKit extends AbstractIdleService {
     }
 
 
-    protected PeerGroup createPeerGroup() throws TimeoutException {
+    protected PeerGroup createPeerGroup() {
         return new PeerGroup(params, vChain);
     }
 

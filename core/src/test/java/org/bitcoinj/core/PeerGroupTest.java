@@ -22,6 +22,7 @@ import com.google.common.collect.*;
 import com.google.common.util.concurrent.*;
 import org.bitcoinj.core.listeners.*;
 import org.bitcoinj.net.discovery.*;
+import org.bitcoinj.script.Script;
 import org.bitcoinj.testing.*;
 import org.bitcoinj.utils.*;
 import org.bitcoinj.wallet.Wallet;
@@ -242,7 +243,7 @@ public class PeerGroupTest extends TestWithPeerGroup {
         // Create a peer.
         InboundMessageQueuer p1 = connectPeer(1);
         
-        Wallet wallet2 = new Wallet(UNITTEST);
+        Wallet wallet2 = Wallet.createDeterministic(UNITTEST, Script.ScriptType.P2PKH);
         ECKey key2 = wallet2.freshReceiveKey();
         Address address2 = LegacyAddress.fromKey(UNITTEST, key2);
         
@@ -405,7 +406,7 @@ public class PeerGroupTest extends TestWithPeerGroup {
         inbound(p3, inv);
         pingAndWait(p3);
         Threading.waitForUserCode();
-        assertEquals(tx.getHash(), confEvent[0].getTransactionHash());
+        assertEquals(tx.getTxId(), confEvent[0].getTransactionHash());
         assertEquals(3, tx.getConfidence().numBroadcastPeers());
         assertTrue(tx.getConfidence().wasBroadcastBy(peerOf(p3).getAddress()));
     }
@@ -418,7 +419,7 @@ public class PeerGroupTest extends TestWithPeerGroup {
         final long now = Utils.currentTimeSeconds();
         peerGroup.start();
         assertTrue(peerGroup.getFastCatchupTimeSecs() > now - WEEK - 10000);
-        Wallet w2 = new Wallet(UNITTEST);
+        Wallet w2 = Wallet.createDeterministic(UNITTEST, Script.ScriptType.P2PKH);
         ECKey key1 = new ECKey();
         key1.setCreationTimeSeconds(now - 86400);  // One day ago.
         w2.importKey(key1);
@@ -621,12 +622,12 @@ public class PeerGroupTest extends TestWithPeerGroup {
         tx2.addInput(tx.getOutput(0));
         TransactionOutPoint outpoint = tx2.getInput(0).getOutpoint();
         assertTrue(p1.lastReceivedFilter.contains(key.getPubKey()));
-        assertFalse(p1.lastReceivedFilter.contains(tx.getHash().getBytes()));
+        assertFalse(p1.lastReceivedFilter.contains(tx.getTxId().getBytes()));
         inbound(p1, tx);
         // p1 requests dep resolution, p2 is quiet.
         assertTrue(outbound(p1) instanceof GetDataMessage);
         final Sha256Hash dephash = tx.getInput(0).getOutpoint().getHash();
-        final InventoryItem inv = new InventoryItem(InventoryItem.Type.Transaction, dephash);
+        final InventoryItem inv = new InventoryItem(InventoryItem.Type.TRANSACTION, dephash);
         inbound(p1, new NotFoundMessage(UNITTEST, ImmutableList.of(inv)));
         assertNull(outbound(p1));
         assertNull(outbound(p2));
@@ -641,8 +642,6 @@ public class PeerGroupTest extends TestWithPeerGroup {
     public void testBloomResendOnNewKey() throws Exception {
         // Check that when we add a new key to the wallet, the Bloom filter is re-calculated and re-sent but only once
         // we exceed the lookahead threshold.
-        wallet.setKeyChainGroupLookaheadSize(5);
-        wallet.setKeyChainGroupLookaheadThreshold(4);
         peerGroup.start();
         // Create a couple of peers.
         InboundMessageQueuer p1 = connectPeer(1);
@@ -688,24 +687,24 @@ public class PeerGroupTest extends TestWithPeerGroup {
 
     @Test
     public void waitForPeersOfVersion() throws Exception {
-        final int baseVer = peerGroup.getMinRequiredProtocolVersion() + 3000;
-        final int newVer = baseVer + 1000;
+        final int bip37ver = UNITTEST.getProtocolVersionNum(NetworkParameters.ProtocolVersion.BLOOM_FILTER);
+        final int bip111ver = UNITTEST.getProtocolVersionNum(NetworkParameters.ProtocolVersion.BLOOM_FILTER_BIP111);
 
-        ListenableFuture<List<Peer>> future = peerGroup.waitForPeersOfVersion(2, newVer);
+        ListenableFuture<List<Peer>> future = peerGroup.waitForPeersOfVersion(2, bip111ver);
 
         VersionMessage ver1 = new VersionMessage(UNITTEST, 10);
-        ver1.clientVersion = baseVer;
+        ver1.clientVersion = bip37ver;
         ver1.localServices = VersionMessage.NODE_NETWORK;
         VersionMessage ver2 = new VersionMessage(UNITTEST, 10);
-        ver2.clientVersion = newVer;
-        ver2.localServices = VersionMessage.NODE_NETWORK;
+        ver2.clientVersion = bip111ver;
+        ver2.localServices = VersionMessage.NODE_NETWORK | VersionMessage.NODE_BLOOM;
         peerGroup.start();
         assertFalse(future.isDone());
         connectPeer(1, ver1);
         assertFalse(future.isDone());
         connectPeer(2, ver2);
         assertFalse(future.isDone());
-        assertTrue(peerGroup.waitForPeersOfVersion(1, newVer).isDone());   // Immediate completion.
+        assertTrue(peerGroup.waitForPeersOfVersion(1, bip111ver).isDone());   // Immediate completion.
         connectPeer(3, ver2);
         future.get();
         assertTrue(future.isDone());
@@ -781,14 +780,11 @@ public class PeerGroupTest extends TestWithPeerGroup {
         final int NUM_KEYS = 9;
 
         // First, grab a load of keys from the wallet, and then recreate it so it forgets that those keys were issued.
-        Wallet shadow = Wallet.fromSeed(wallet.getParams(), wallet.getKeyChainSeed());
+        Wallet shadow = Wallet.fromSeed(wallet.getParams(), wallet.getKeyChainSeed(), Script.ScriptType.P2PKH);
         List<ECKey> keys = new ArrayList<>(NUM_KEYS);
         for (int i = 0; i < NUM_KEYS; i++) {
             keys.add(shadow.freshReceiveKey());
         }
-        // Reduce the number of keys we need to work with to speed up this test.
-        wallet.setKeyChainGroupLookaheadSize(4);
-        wallet.setKeyChainGroupLookaheadThreshold(2);
 
         peerGroup.start();
         InboundMessageQueuer p1 = connectPeer(1);
@@ -799,7 +795,7 @@ public class PeerGroupTest extends TestWithPeerGroup {
         assertNextMessageIs(p1, GetBlocksMessage.class);
 
         // Make some transactions and blocks that send money to the wallet thus using up all the keys.
-        List<Block> blocks = Lists.newArrayList();
+        List<Block> blocks = new ArrayList<>();
         Coin expectedBalance = Coin.ZERO;
         Block prev = blockStore.getChainHead().getHeader();
         for (ECKey key1 : keys) {
@@ -834,7 +830,7 @@ public class PeerGroupTest extends TestWithPeerGroup {
         // Await restart of the chain download.
         GetDataMessage getdata = assertNextMessageIs(p1, GetDataMessage.class);
         assertEquals(exhaustionPoint.getHash(), getdata.getHashOf(0));
-        assertEquals(InventoryItem.Type.FilteredBlock, getdata.getItems().get(0).type);
+        assertEquals(InventoryItem.Type.FILTERED_BLOCK, getdata.getItems().get(0).type);
         List<Block> newBlocks = blocks.subList(3, blocks.size());
         filterAndSend(p1, newBlocks, newFilter);
         assertNextMessageIs(p1, Ping.class);

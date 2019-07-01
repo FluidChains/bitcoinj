@@ -29,7 +29,7 @@ import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -147,7 +147,7 @@ public class PaymentChannelV2ClientState extends PaymentChannelClientState {
         refundTx.getInput(0).setScriptSig(ScriptBuilder.createCLTVPaymentChannelP2SHRefund(refundSignature, redeemScript));
 
         refundTx.getConfidence().setSource(TransactionConfidence.Source.SELF);
-        log.info("initiated channel with contract {}", contract.getHashAsString());
+        log.info("initiated channel with contract {}", contract.getTxId());
         stateMachine.transition(State.SAVE_STATE_IN_WALLET);
         // Client should now call getIncompleteRefundTransaction() and send it to the server.
     }
@@ -199,7 +199,7 @@ public class PaymentChannelV2ClientState extends PaymentChannelClientState {
         StoredPaymentChannelClientStates channels = (StoredPaymentChannelClientStates)
                 wallet.getExtensions().get(StoredPaymentChannelClientStates.EXTENSION_ID);
         checkNotNull(channels, "You have not added the StoredPaymentChannelClientStates extension to the wallet.");
-        checkState(channels.getChannel(id, contract.getHash()) == null);
+        checkState(channels.getChannel(id, contract.getTxId()) == null);
         storedChannel = new StoredClientChannel(getMajorVersion(), id, contract, refundTx, myKey, serverKey, valueToMe, refundFees, expiryTime, true);
         channels.putChannel(storedChannel);
     }

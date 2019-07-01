@@ -21,6 +21,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.TransactionSignature;
@@ -30,7 +31,7 @@ import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -205,7 +206,7 @@ public class PaymentChannelV2ServerState extends PaymentChannelServerState {
         ListenableFuture<Transaction> future = broadcaster.broadcastTransaction(tx).future();
         Futures.addCallback(future, new FutureCallback<Transaction>() {
             @Override public void onSuccess(Transaction transaction) {
-                log.info("TX {} propagated, channel successfully closed.", transaction.getHash());
+                log.info("TX {} propagated, channel successfully closed.", transaction.getTxId());
                 stateMachine.transition(State.CLOSED);
                 closedFuture.set(transaction);
             }
@@ -215,7 +216,7 @@ public class PaymentChannelV2ServerState extends PaymentChannelServerState {
                 stateMachine.transition(State.ERROR);
                 closedFuture.setException(throwable);
             }
-        });
+        }, MoreExecutors.directExecutor());
         return closedFuture;
     }
 }

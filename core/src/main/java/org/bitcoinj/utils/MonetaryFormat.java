@@ -60,6 +60,12 @@ public final class MonetaryFormat {
     public static final String CODE_MBTC = "mBTC";
     /** Currency code for base 1/1000000 Bitcoin. */
     public static final String CODE_UBTC = "µBTC";
+    /** Currency symbol for base 1 Bitcoin. */
+    public static final String SYMBOL_BTC = "\u20bf";
+    /** Currency symbol for base 1/1000 Bitcoin. */
+    public static final String SYMBOL_MBTC = "m" + SYMBOL_BTC;
+    /** Currency symbol for base 1/1000000 Bitcoin. */
+    public static final String SYMBOL_UBTC = "µ" + SYMBOL_BTC;
 
     public static final int MAX_DECIMALS = 8;
 
@@ -150,7 +156,7 @@ public final class MonetaryFormat {
      * </p>
      * 
      * <p>
-     * For example, if you pass <tt>4,2</tt> it will add four decimals to your formatted string if needed, and then add
+     * For example, if you pass {@code 4,2} it will add four decimals to your formatted string if needed, and then add
      * another two decimals if needed. At this point, rather than adding further decimals the value will be rounded.
      * </p>
      * 
@@ -173,7 +179,7 @@ public final class MonetaryFormat {
      * </p>
      * 
      * <p>
-     * For example, if you pass <tt>1,8</tt> it will up to eight decimals to your formatted string if needed. After
+     * For example, if you pass {@code 1,8} it will up to eight decimals to your formatted string if needed. After
      * these have been used up, rather than adding further decimals the value will be rounded.
      * </p>
      * 
@@ -292,6 +298,10 @@ public final class MonetaryFormat {
     }
 
     public MonetaryFormat() {
+        this(false);
+    }
+
+    public MonetaryFormat(boolean useBitcoinSymbol) {
         // defaults
         this.negativeSign = '-';
         this.positiveSign = 0; // none
@@ -302,9 +312,9 @@ public final class MonetaryFormat {
         this.shift = 0;
         this.roundingMode = RoundingMode.HALF_UP;
         this.codes = new String[MAX_DECIMALS];
-        this.codes[0] = CODE_BTC;
-        this.codes[3] = CODE_MBTC;
-        this.codes[6] = CODE_UBTC;
+        this.codes[0] = useBitcoinSymbol ? SYMBOL_BTC : CODE_BTC;
+        this.codes[3] = useBitcoinSymbol ? SYMBOL_MBTC : CODE_MBTC;
+        this.codes[6] = useBitcoinSymbol ? SYMBOL_UBTC : CODE_UBTC;
         this.codeSeparator = ' ';
         this.codePrefixed = true;
     }
@@ -479,7 +489,7 @@ public final class MonetaryFormat {
             return false;
         if (!Objects.equals(this.roundingMode, other.roundingMode))
             return false;
-        if (!Objects.equals(this.codes, other.codes))
+        if (!Arrays.equals(this.codes, other.codes))
             return false;
         if (!Objects.equals(this.codeSeparator, other.codeSeparator))
             return false;
@@ -491,6 +501,6 @@ public final class MonetaryFormat {
     @Override
     public int hashCode() {
         return Objects.hash(negativeSign, positiveSign, zeroDigit, decimalMark, minDecimals, decimalGroups, shift,
-                roundingMode, codes, codeSeparator, codePrefixed);
+                roundingMode, Arrays.hashCode(codes), codeSeparator, codePrefixed);
     }
 }

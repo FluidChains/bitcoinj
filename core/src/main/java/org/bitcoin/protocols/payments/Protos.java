@@ -97,13 +97,6 @@ public final class Protos {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
               bitField0_ |= 0x00000001;
               amount_ = input.readUInt64();
@@ -112,6 +105,13 @@ public final class Protos {
             case 18: {
               bitField0_ |= 0x00000002;
               script_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -131,6 +131,7 @@ public final class Protos {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_Output_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_Output_fieldAccessorTable
@@ -186,6 +187,7 @@ public final class Protos {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -199,6 +201,7 @@ public final class Protos {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -210,6 +213,7 @@ public final class Protos {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -344,6 +348,7 @@ public final class Protos {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -351,6 +356,7 @@ public final class Protos {
     public static Builder newBuilder(org.bitcoin.protocols.payments.Protos.Output prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -378,6 +384,7 @@ public final class Protos {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_Output_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_Output_fieldAccessorTable
@@ -400,6 +407,7 @@ public final class Protos {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         amount_ = 0L;
@@ -409,15 +417,18 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_Output_descriptor;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.Output getDefaultInstanceForType() {
         return org.bitcoin.protocols.payments.Protos.Output.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.Output build() {
         org.bitcoin.protocols.payments.Protos.Output result = buildPartial();
         if (!result.isInitialized()) {
@@ -426,6 +437,7 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.Output buildPartial() {
         org.bitcoin.protocols.payments.Protos.Output result = new org.bitcoin.protocols.payments.Protos.Output(this);
         int from_bitField0_ = bitField0_;
@@ -443,32 +455,39 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.bitcoin.protocols.payments.Protos.Output) {
           return mergeFrom((org.bitcoin.protocols.payments.Protos.Output)other);
@@ -491,6 +510,7 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (!hasScript()) {
           return false;
@@ -498,6 +518,7 @@ public final class Protos {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -615,11 +636,13 @@ public final class Protos {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -641,6 +664,7 @@ public final class Protos {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<Output>
         PARSER = new com.google.protobuf.AbstractParser<Output>() {
+      @java.lang.Override
       public Output parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -658,6 +682,7 @@ public final class Protos {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.bitcoin.protocols.payments.Protos.Output getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -887,13 +912,6 @@ public final class Protos {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
@@ -936,6 +954,13 @@ public final class Protos {
               merchantData_ = input.readBytes();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -956,6 +981,7 @@ public final class Protos {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentDetails_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentDetails_fieldAccessorTable
@@ -1251,6 +1277,7 @@ public final class Protos {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1270,6 +1297,7 @@ public final class Protos {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1296,6 +1324,7 @@ public final class Protos {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1490,6 +1519,7 @@ public final class Protos {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1497,6 +1527,7 @@ public final class Protos {
     public static Builder newBuilder(org.bitcoin.protocols.payments.Protos.PaymentDetails prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -1520,6 +1551,7 @@ public final class Protos {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentDetails_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentDetails_fieldAccessorTable
@@ -1543,6 +1575,7 @@ public final class Protos {
           getOutputsFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         network_ = "main";
@@ -1566,15 +1599,18 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentDetails_descriptor;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentDetails getDefaultInstanceForType() {
         return org.bitcoin.protocols.payments.Protos.PaymentDetails.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentDetails build() {
         org.bitcoin.protocols.payments.Protos.PaymentDetails result = buildPartial();
         if (!result.isInitialized()) {
@@ -1583,6 +1619,7 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentDetails buildPartial() {
         org.bitcoin.protocols.payments.Protos.PaymentDetails result = new org.bitcoin.protocols.payments.Protos.PaymentDetails(this);
         int from_bitField0_ = bitField0_;
@@ -1625,32 +1662,39 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.bitcoin.protocols.payments.Protos.PaymentDetails) {
           return mergeFrom((org.bitcoin.protocols.payments.Protos.PaymentDetails)other);
@@ -1717,6 +1761,7 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (!hasTime()) {
           return false;
@@ -1729,6 +1774,7 @@ public final class Protos {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2506,11 +2552,13 @@ public final class Protos {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -2532,6 +2580,7 @@ public final class Protos {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<PaymentDetails>
         PARSER = new com.google.protobuf.AbstractParser<PaymentDetails>() {
+      @java.lang.Override
       public PaymentDetails parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2549,6 +2598,7 @@ public final class Protos {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.bitcoin.protocols.payments.Protos.PaymentDetails getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -2689,13 +2739,6 @@ public final class Protos {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
               bitField0_ |= 0x00000001;
               paymentDetailsVersion_ = input.readUInt32();
@@ -2722,6 +2765,13 @@ public final class Protos {
               signature_ = input.readBytes();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2739,6 +2789,7 @@ public final class Protos {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentRequest_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentRequest_fieldAccessorTable
@@ -2886,6 +2937,7 @@ public final class Protos {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2899,6 +2951,7 @@ public final class Protos {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -2919,6 +2972,7 @@ public final class Protos {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3090,6 +3144,7 @@ public final class Protos {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3097,6 +3152,7 @@ public final class Protos {
     public static Builder newBuilder(org.bitcoin.protocols.payments.Protos.PaymentRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3120,6 +3176,7 @@ public final class Protos {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentRequest_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentRequest_fieldAccessorTable
@@ -3142,6 +3199,7 @@ public final class Protos {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         paymentDetailsVersion_ = 1;
@@ -3157,15 +3215,18 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentRequest_descriptor;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentRequest getDefaultInstanceForType() {
         return org.bitcoin.protocols.payments.Protos.PaymentRequest.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentRequest build() {
         org.bitcoin.protocols.payments.Protos.PaymentRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -3174,6 +3235,7 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentRequest buildPartial() {
         org.bitcoin.protocols.payments.Protos.PaymentRequest result = new org.bitcoin.protocols.payments.Protos.PaymentRequest(this);
         int from_bitField0_ = bitField0_;
@@ -3203,32 +3265,39 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.bitcoin.protocols.payments.Protos.PaymentRequest) {
           return mergeFrom((org.bitcoin.protocols.payments.Protos.PaymentRequest)other);
@@ -3262,6 +3331,7 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (!hasSerializedPaymentDetails()) {
           return false;
@@ -3269,6 +3339,7 @@ public final class Protos {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3572,11 +3643,13 @@ public final class Protos {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3598,6 +3671,7 @@ public final class Protos {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<PaymentRequest>
         PARSER = new com.google.protobuf.AbstractParser<PaymentRequest>() {
+      @java.lang.Override
       public PaymentRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3615,6 +3689,7 @@ public final class Protos {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.bitcoin.protocols.payments.Protos.PaymentRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -3690,19 +3765,19 @@ public final class Protos {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
                 certificate_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
                 mutable_bitField0_ |= 0x00000001;
               }
               certificate_.add(input.readBytes());
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -3725,6 +3800,7 @@ public final class Protos {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_X509Certificates_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_X509Certificates_fieldAccessorTable
@@ -3767,6 +3843,7 @@ public final class Protos {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3776,6 +3853,7 @@ public final class Protos {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < certificate_.size(); i++) {
@@ -3784,6 +3862,7 @@ public final class Protos {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3906,6 +3985,7 @@ public final class Protos {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3913,6 +3993,7 @@ public final class Protos {
     public static Builder newBuilder(org.bitcoin.protocols.payments.Protos.X509Certificates prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3936,6 +4017,7 @@ public final class Protos {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_X509Certificates_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_X509Certificates_fieldAccessorTable
@@ -3958,6 +4040,7 @@ public final class Protos {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         certificate_ = java.util.Collections.emptyList();
@@ -3965,15 +4048,18 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_X509Certificates_descriptor;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.X509Certificates getDefaultInstanceForType() {
         return org.bitcoin.protocols.payments.Protos.X509Certificates.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.X509Certificates build() {
         org.bitcoin.protocols.payments.Protos.X509Certificates result = buildPartial();
         if (!result.isInitialized()) {
@@ -3982,6 +4068,7 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.X509Certificates buildPartial() {
         org.bitcoin.protocols.payments.Protos.X509Certificates result = new org.bitcoin.protocols.payments.Protos.X509Certificates(this);
         int from_bitField0_ = bitField0_;
@@ -3994,32 +4081,39 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.bitcoin.protocols.payments.Protos.X509Certificates) {
           return mergeFrom((org.bitcoin.protocols.payments.Protos.X509Certificates)other);
@@ -4046,10 +4140,12 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -4168,11 +4264,13 @@ public final class Protos {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -4194,6 +4292,7 @@ public final class Protos {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<X509Certificates>
         PARSER = new com.google.protobuf.AbstractParser<X509Certificates>() {
+      @java.lang.Override
       public X509Certificates parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -4211,6 +4310,7 @@ public final class Protos {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.bitcoin.protocols.payments.Protos.X509Certificates getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -4376,13 +4476,6 @@ public final class Protos {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               bitField0_ |= 0x00000001;
               merchantData_ = input.readBytes();
@@ -4411,6 +4504,13 @@ public final class Protos {
               memo_ = bs;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4434,6 +4534,7 @@ public final class Protos {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_Payment_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_Payment_fieldAccessorTable
@@ -4609,6 +4710,7 @@ public final class Protos {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4624,6 +4726,7 @@ public final class Protos {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -4641,6 +4744,7 @@ public final class Protos {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -4798,6 +4902,7 @@ public final class Protos {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -4805,6 +4910,7 @@ public final class Protos {
     public static Builder newBuilder(org.bitcoin.protocols.payments.Protos.Payment prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -4828,6 +4934,7 @@ public final class Protos {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_Payment_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_Payment_fieldAccessorTable
@@ -4851,6 +4958,7 @@ public final class Protos {
           getRefundToFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         merchantData_ = com.google.protobuf.ByteString.EMPTY;
@@ -4868,15 +4976,18 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_Payment_descriptor;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.Payment getDefaultInstanceForType() {
         return org.bitcoin.protocols.payments.Protos.Payment.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.Payment build() {
         org.bitcoin.protocols.payments.Protos.Payment result = buildPartial();
         if (!result.isInitialized()) {
@@ -4885,6 +4996,7 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.Payment buildPartial() {
         org.bitcoin.protocols.payments.Protos.Payment result = new org.bitcoin.protocols.payments.Protos.Payment(this);
         int from_bitField0_ = bitField0_;
@@ -4916,32 +5028,39 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.bitcoin.protocols.payments.Protos.Payment) {
           return mergeFrom((org.bitcoin.protocols.payments.Protos.Payment)other);
@@ -5002,6 +5121,7 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         for (int i = 0; i < getRefundToCount(); i++) {
           if (!getRefundTo(i).isInitialized()) {
@@ -5011,6 +5131,7 @@ public final class Protos {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5592,11 +5713,13 @@ public final class Protos {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -5618,6 +5741,7 @@ public final class Protos {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<Payment>
         PARSER = new com.google.protobuf.AbstractParser<Payment>() {
+      @java.lang.Override
       public Payment parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5635,6 +5759,7 @@ public final class Protos {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.bitcoin.protocols.payments.Protos.Payment getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -5736,13 +5861,6 @@ public final class Protos {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               org.bitcoin.protocols.payments.Protos.Payment.Builder subBuilder = null;
               if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -5762,6 +5880,13 @@ public final class Protos {
               memo_ = bs;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -5779,6 +5904,7 @@ public final class Protos {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentACK_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentACK_fieldAccessorTable
@@ -5875,6 +6001,7 @@ public final class Protos {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -5892,6 +6019,7 @@ public final class Protos {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -5903,6 +6031,7 @@ public final class Protos {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -6035,6 +6164,7 @@ public final class Protos {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -6042,6 +6172,7 @@ public final class Protos {
     public static Builder newBuilder(org.bitcoin.protocols.payments.Protos.PaymentACK prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -6065,6 +6196,7 @@ public final class Protos {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentACK_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentACK_fieldAccessorTable
@@ -6088,6 +6220,7 @@ public final class Protos {
           getPaymentFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         if (paymentBuilder_ == null) {
@@ -6101,15 +6234,18 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.bitcoin.protocols.payments.Protos.internal_static_payments_PaymentACK_descriptor;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentACK getDefaultInstanceForType() {
         return org.bitcoin.protocols.payments.Protos.PaymentACK.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentACK build() {
         org.bitcoin.protocols.payments.Protos.PaymentACK result = buildPartial();
         if (!result.isInitialized()) {
@@ -6118,6 +6254,7 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public org.bitcoin.protocols.payments.Protos.PaymentACK buildPartial() {
         org.bitcoin.protocols.payments.Protos.PaymentACK result = new org.bitcoin.protocols.payments.Protos.PaymentACK(this);
         int from_bitField0_ = bitField0_;
@@ -6139,32 +6276,39 @@ public final class Protos {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.bitcoin.protocols.payments.Protos.PaymentACK) {
           return mergeFrom((org.bitcoin.protocols.payments.Protos.PaymentACK)other);
@@ -6189,6 +6333,7 @@ public final class Protos {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         if (!hasPayment()) {
           return false;
@@ -6199,6 +6344,7 @@ public final class Protos {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -6471,11 +6617,13 @@ public final class Protos {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -6497,6 +6645,7 @@ public final class Protos {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<PaymentACK>
         PARSER = new com.google.protobuf.AbstractParser<PaymentACK>() {
+      @java.lang.Override
       public PaymentACK parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -6514,6 +6663,7 @@ public final class Protos {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.bitcoin.protocols.payments.Protos.PaymentACK getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }

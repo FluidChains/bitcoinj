@@ -23,12 +23,12 @@ import org.bitcoinj.core.BlockChain;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.VerificationException;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.UnitTestParams;
+import org.bitcoinj.script.Script;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.MemoryBlockStore;
 import org.bitcoinj.utils.BriefLogFormatter;
@@ -60,9 +60,9 @@ public class TestWithWallet {
     public void setUp() throws Exception {
         BriefLogFormatter.init();
         Context.propagate(new Context(UNITTEST, 100, Coin.ZERO, false));
-        wallet = new Wallet(UNITTEST);
-        myKey = wallet.currentReceiveKey();
-        myAddress = LegacyAddress.fromKey(UNITTEST, myKey);
+        wallet = Wallet.createDeterministic(UNITTEST, Script.ScriptType.P2PKH);
+        myKey = wallet.freshReceiveKey();
+        myAddress = wallet.freshReceiveAddress(Script.ScriptType.P2PKH);
         blockStore = new MemoryBlockStore(UNITTEST);
         chain = new BlockChain(UNITTEST, wallet, blockStore);
     }
@@ -86,7 +86,7 @@ public class TestWithWallet {
                 wallet.notifyNewBestBlock(bp.storedBlock);
         }
         if (transactions.length == 1)
-            return wallet.getTransaction(transactions[0].getHash());  // Can be null if tx is a double spend that's otherwise irrelevant.
+            return wallet.getTransaction(transactions[0].getTxId());  // Can be null if tx is a double spend that's otherwise irrelevant.
         else
             return null;
     }

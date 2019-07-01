@@ -7,22 +7,23 @@ Usage: wallet-tool --flags action-name
   dump                 Loads and prints the given wallet in textual form to stdout. Private keys and seed are only
                        printed if --dump-privkeys is specified. If the wallet is encrypted, also specify the --password
                        option to dump the private keys and seed.
+                       If --dump-lookahead is present, also show pregenerated but not yet issued keys.
   raw-dump             Prints the wallet as a raw protobuf with no parsing or sanity checking applied.
   create               Makes a new wallet in the file specified by --wallet.
                        Will complain and require --force if the wallet already exists.
                        If --seed is present, it should specify either a mnemonic code or hex/base58 raw seed bytes.
                        If --watchkey is present, it creates a watching wallet using the specified base58 xpub.
-                       If --seed or --watchkey is combined with either --date or --unixtime, use that as a birthdate for
+                       If --seed or --watchkey is combined with either --date or --unixtime, use that as a birthdate for.
+                       If --output-script-type is present, use that for deriving addresses.
                        the wallet. See the set-creation-time action for the meaning of these flags.
   marry                Makes the wallet married with other parties, requiring multisig to spend funds.
                        External public keys for other signing parties must be specified with --xpubkeys (comma separated).
-  add-key              Adds a new key to the wallet, either specified or freshly generated.
+  add-key              Adds a new key to the wallet.
                        If --date is specified, that's the creation date.
                        If --unixtime is specified, that's the creation time and it overrides --date.
-                       If --privkey is specified, use as a hex/base58 encoded private key.
+                       If --privkey is specified, use as a WIF-, hex- or base58-encoded private key.
                        Don't specify --pubkey in that case, it will be derived automatically.
                        If --pubkey is specified, use as a hex/base58 encoded non-compressed public key.
-                       If --lookahead-size is specified, pre-generate at least this many keys ahead of where we are.
   add-addr             Requires --addr to be specified, and adds it as a watching address.
   delete-key           Removes the key specified by --pubkey or --addr from the wallet.
   current-receive-addr Prints the current receive address, deriving one if needed. Addresses derived with this action are
@@ -50,18 +51,20 @@ Usage: wallet-tool --flags action-name
                          --payment-request=http://merchant.com/pay.php?123
 
                        Other options include:
-                          --fee-per-kb=0.0005 or --fee-sat-per-byte=50 sets the network fee
+                          --fee-per-vkb or --fee-sat-per-vbyte sets the network fee, see below
                           --locktime=1234  sets the lock time to block 1234
                           --locktime=2013/01/01  sets the lock time to 1st Jan 2013
                           --allow-unconfirmed will let you create spends of pending non-change outputs.
                           --no-pki disables pki verification for payment requests.
   encrypt              Requires --password and uses it to encrypt the wallet in place.
   decrypt              Requires --password and uses it to decrypt the wallet in place.
+  upgrade              Upgrade basic or deterministic wallets to deterministic wallets of the given script type.
+                       If --output-script-type is present, use that as the upgrade target.
   rotate               Takes --date and sets that as the key rotation time. Any coins controlled by keys or HD chains
                        created before this date will be re-spent to a key (from an HD tree) that was created after it.
                        If --date is missing, the current time is assumed. If the time covers all keys, a new HD tree
                        will be created from a new random seed.
-  set-creation-time    Modify the creation time of the active chain of this wallet. This is useful for repairing
+  set-creation-time    Modify the creation time of the active chains of this wallet. This is useful for repairing
                        wallets that accidently have been created "in the future". Currently, watching wallets are not
                        supported.
                        If --date is specified, that's the creation date.
@@ -74,14 +77,14 @@ Usage: wallet-tool --flags action-name
                        Options:
                           --output=pubkey:value sets the amount to lock and the recipient
                           --refund-to=pubkey sets "our" public key
-                          --fee-per-kb=0.0005 or --fee-sat-per-byte=50 sets the network fee
+                          --fee-per-vkb or --fee-sat-per-vbyte sets the network fee, see below
                           --locktime=YYYY/MM/DD sets the expiry time for the channel
   settle-cltvpaymentchannel
                        Creates and broadcasts a transaction settling a previous micropayment channel.
                        This tool, for testing, requires the presence of both private keys.
                        Options:
                           --output=pubkey:value sets the destination for the money
-                          --fee-per-kb=0.0005 or --fee-sat-per-byte=50 sets the network fee
+                          --fee-per-vkb or --fee-sat-per-vbyte sets the network fee, see below
                           --txhash=hash sets the transaction to spend
   refund-cltvpaymentchannel
                        Creates and broadcasts a transaction refunding a previous micropayment channel.
@@ -89,7 +92,7 @@ Usage: wallet-tool --flags action-name
                        the created transaction won't be accepted into the mempool until that point.
                        Options:
                           --output=pubkey:value sets the destination for the money
-                          --fee-per-kb=0.0005 or --fee-sat-per-byte=50 sets the network fee
+                          --fee-per-vkb or --fee-sat-per-vbyte sets the network fee, see below
                           --txhash=hash sets the transaction to spend
 
 >>> GENERAL OPTIONS
@@ -100,6 +103,9 @@ Usage: wallet-tool --flags action-name
   --chain=<file>       Specifies the name of the file that stores the block chain.
   --force              Overrides any safety checks on the requested action.
   --date               Provide a date in form YYYY/MM/DD to any action that requires one.
+  --fee-per-vkb        Sets the network fee in Bitcoin per kilobyte when sending, e.g. --fee-per-vkb=0.0005
+  --fee-sat-per-vbyte  Sets the network fee in satoshi per byte when sending, e.g. --fee-sat-per-vbyte=50
+  --output-script-type Provide an output script type to any action that requires one. May be P2PKH or P2WPKH.
   --peers=1.2.3.4      Comma separated IP addresses/domain names for connections instead of peer discovery.
   --offline            If specified when sending, don't try and connect, just write the tx to the wallet.
   --condition=...      Allows you to specify a numeric condition for other commands. The format is

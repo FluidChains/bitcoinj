@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andreas Schildbach
+ * Copyright by the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Locale;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.script.Script;
@@ -39,6 +41,16 @@ import com.google.common.base.MoreObjects;
 public class SegwitAddressTest {
     private static final MainNetParams MAINNET = MainNetParams.get();
     private static final TestNet3Params TESTNET = TestNet3Params.get();
+
+    @Test
+    public void equalsContract() {
+        EqualsVerifier.forClass(SegwitAddress.class)
+                .withPrefabValues(NetworkParameters.class, MAINNET, TESTNET)
+                .suppress(Warning.NULL_FIELDS)
+                .suppress(Warning.TRANSIENT_FIELDS)
+                .usingGetClass()
+                .verify();
+    }
 
     @Test
     public void example_p2wpkh_mainnet() {
@@ -108,7 +120,7 @@ public class SegwitAddressTest {
             if (valid.expectedWitnessVersion == 0) {
                 Script expectedScriptPubKey = new Script(Utils.HEX.decode(valid.expectedScriptPubKey));
                 assertEquals(address, SegwitAddress.fromHash(valid.expectedParams,
-                        ScriptPattern.extractHashFromPayToWitnessHash(expectedScriptPubKey)));
+                        ScriptPattern.extractHashFromP2WH(expectedScriptPubKey)));
             }
             assertEquals(valid.expectedWitnessVersion, address.getWitnessVersion());
         }

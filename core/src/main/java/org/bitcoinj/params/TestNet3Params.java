@@ -62,14 +62,16 @@ public class TestNet3Params extends AbstractBitcoinNetParams {
 
         dnsSeeds = new String[] {
                 "testnet-seed.bitcoin.jonasschnelli.ch", // Jonas Schnelli
+                "seed.tbtc.petertodd.org",               // Peter Todd
+                "seed.testnet.bitcoin.sprovoost.nl",     // Sjors Provoost
                 "testnet-seed.bluematt.me",              // Matt Corallo
-                "testnet-seed.bitcoin.petertodd.org",    // Peter Todd
-                "testnet-seed.bitcoin.schildbach.de",    // Andreas Schildbach
                 "bitcoin-testnet.bloqseeds.net",         // Bloq
         };
         addrSeeds = null;
-        bip32HeaderPub = 0x043587CF;
-        bip32HeaderPriv = 0x04358394;
+        bip32HeaderP2PKHpub = 0x043587cf; // The 4 byte header that serializes in base58 to "tpub".
+        bip32HeaderP2PKHpriv = 0x04358394; // The 4 byte header that serializes in base58 to "tprv"
+        bip32HeaderP2WPKHpub = 0x045f1cf6; // The 4 byte header that serializes in base58 to "vpub".
+        bip32HeaderP2WPKHpriv = 0x045f18bc; // The 4 byte header that serializes in base58 to "vprv"
 
         majorityEnforceBlockUpgrade = TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
@@ -105,19 +107,19 @@ public class TestNet3Params extends AbstractBitcoinNetParams {
             // There is an integer underflow bug in bitcoin-qt that means mindiff blocks are accepted when time
             // goes backwards.
             if (timeDelta >= 0 && timeDelta <= NetworkParameters.TARGET_SPACING * 2) {
-        	// Walk backwards until we find a block that doesn't have the easiest proof of work, then check
-        	// that difficulty is equal to that one.
-        	StoredBlock cursor = storedPrev;
-        	while (!cursor.getHeader().equals(getGenesisBlock()) &&
-                       cursor.getHeight() % getInterval() != 0 &&
-                       cursor.getHeader().getDifficultyTargetAsInteger().equals(getMaxTarget()))
-                    cursor = cursor.getPrev(blockStore);
-        	BigInteger cursorTarget = cursor.getHeader().getDifficultyTargetAsInteger();
-        	BigInteger newTarget = nextBlock.getDifficultyTargetAsInteger();
-        	if (!cursorTarget.equals(newTarget))
-                    throw new VerificationException("Testnet block transition that is not allowed: " +
-                	Long.toHexString(cursor.getHeader().getDifficultyTarget()) + " vs " +
-                	Long.toHexString(nextBlock.getDifficultyTarget()));
+                // Walk backwards until we find a block that doesn't have the easiest proof of work, then check
+                // that difficulty is equal to that one.
+                StoredBlock cursor = storedPrev;
+                while (!cursor.getHeader().equals(getGenesisBlock()) &&
+                           cursor.getHeight() % getInterval() != 0 &&
+                           cursor.getHeader().getDifficultyTargetAsInteger().equals(getMaxTarget()))
+                        cursor = cursor.getPrev(blockStore);
+                BigInteger cursorTarget = cursor.getHeader().getDifficultyTargetAsInteger();
+                BigInteger newTarget = nextBlock.getDifficultyTargetAsInteger();
+                if (!cursorTarget.equals(newTarget))
+                        throw new VerificationException("Testnet block transition that is not allowed: " +
+                        Long.toHexString(cursor.getHeader().getDifficultyTarget()) + " vs " +
+                        Long.toHexString(nextBlock.getDifficultyTarget()));
             }
         } else {
             super.checkDifficultyTransitions(storedPrev, nextBlock, blockStore);

@@ -93,7 +93,7 @@ public class TransactionBroadcast {
         public Message onPreMessageReceived(Peer peer, Message m) {
             if (m instanceof RejectMessage) {
                 RejectMessage rejectMessage = (RejectMessage)m;
-                if (tx.getHash().equals(rejectMessage.getRejectedObjectHash())) {
+                if (tx.getTxId().equals(rejectMessage.getRejectedObjectHash())) {
                     rejects.put(peer, rejectMessage);
                     int size = rejects.size();
                     long threshold = Math.round(numWaitingFor / 2.0);
@@ -152,7 +152,7 @@ public class TransactionBroadcast {
             numWaitingFor = (int) Math.ceil((peers.size() - numToBroadcastTo) / 2.0);
             Collections.shuffle(peers, random);
             peers = peers.subList(0, numToBroadcastTo);
-            log.info("broadcastTransaction: We have {} peers, adding {} to the memory pool", numConnected, tx.getHashAsString());
+            log.info("broadcastTransaction: We have {} peers, adding {} to the memory pool", numConnected, tx.getTxId());
             log.info("Sending to {} peers, will wait for {}, sending to: {}", numToBroadcastTo, numWaitingFor, Joiner.on(",").join(peers));
             for (Peer peer : peers) {
                 try {
@@ -183,7 +183,7 @@ public class TransactionBroadcast {
             // The number of peers that announced this tx has gone up.
             int numSeenPeers = conf.numBroadcastPeers() + rejects.size();
             boolean mined = tx.getAppearsInHashes() != null;
-            log.info("broadcastTransaction: {}:  TX {} seen by {} peers{}", reason, tx.getHashAsString(),
+            log.info("broadcastTransaction: {}:  TX {} seen by {} peers{}", reason, tx.getTxId(),
                     numSeenPeers, mined ? " and mined" : "");
 
             // Progress callback on the requested thread.
@@ -203,7 +203,7 @@ public class TransactionBroadcast {
                 //
                 // We're done! It's important that the PeerGroup lock is not held (by this thread) at this
                 // point to avoid triggering inversions when the Future completes.
-                log.info("broadcastTransaction: {} complete", tx.getHash());
+                log.info("broadcastTransaction: {} complete", tx.getTxId());
                 peerGroup.removePreMessageReceivedEventListener(rejectionListener);
                 conf.removeEventListener(this);
                 future.set(tx);  // RE-ENTRANCY POINT

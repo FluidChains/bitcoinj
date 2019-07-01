@@ -18,6 +18,7 @@ package org.bitcoinj.protocols.channels;
 
 import org.bitcoinj.core.*;
 import org.bitcoinj.protocols.channels.PaymentChannelClient.VersionSelector;
+import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptPattern;
 import org.bitcoinj.testing.TestWithWallet;
 import org.bitcoinj.utils.Threading;
@@ -36,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -117,7 +118,7 @@ public class ChannelConnectionTest extends TestWithWallet {
         sendMoneyToWallet(AbstractBlockChain.NewBlockType.BEST_CHAIN, COIN);
         sendMoneyToWallet(AbstractBlockChain.NewBlockType.BEST_CHAIN, COIN);
         wallet.addExtension(new StoredPaymentChannelClientStates(wallet, failBroadcaster));
-        serverWallet = new Wallet(UNITTEST);
+        serverWallet = Wallet.createDeterministic(UNITTEST, Script.ScriptType.P2PKH);
         serverWallet.addExtension(new StoredPaymentChannelServerStates(serverWallet, failBroadcaster));
         serverWallet.freshReceiveKey();
         // Use an atomic boolean to indicate failure because fail()/assert*() don't work in network threads
@@ -213,7 +214,7 @@ public class ChannelConnectionTest extends TestWithWallet {
         Transaction broadcastMultiSig = broadcasts.take();
         // Wait for the channel to finish opening.
         client.getChannelOpenFuture().get();
-        assertEquals(broadcastMultiSig.getHash(), channelOpenFuture.get());
+        assertEquals(broadcastMultiSig.getTxId(), channelOpenFuture.get());
         assertEquals(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE, client.state().getValueSpent());
 
         // Set up an autosave listener to make sure the server is saving the wallet after each payment increase.
@@ -248,7 +249,7 @@ public class ChannelConnectionTest extends TestWithWallet {
         latch.await();
 
         StoredPaymentChannelServerStates channels = (StoredPaymentChannelServerStates)serverWallet.getExtensions().get(StoredPaymentChannelServerStates.EXTENSION_ID);
-        StoredServerChannel storedServerChannel = channels.getChannel(broadcastMultiSig.getHash());
+        StoredServerChannel storedServerChannel = channels.getChannel(broadcastMultiSig.getTxId());
         PaymentChannelServerState serverState = storedServerChannel.getOrCreateState(serverWallet, mockBroadcaster);
 
         // Check that you can call settle multiple times with no exceptions.
@@ -543,7 +544,7 @@ public class ChannelConnectionTest extends TestWithWallet {
         if (isMultiSigContract()) {
             assertTrue(ScriptPattern.isSentToMultisig(broadcasts.take().getOutput(0).getScriptPubKey()));
         } else {
-            assertTrue(ScriptPattern.isPayToScriptHash(broadcasts.take().getOutput(0).getScriptPubKey()));
+            assertTrue(ScriptPattern.isP2SH(broadcasts.take().getOutput(0).getScriptPubKey()));
         }
         broadcastTxPause.release();
         assertEquals(TransactionConfidence.Source.SELF, broadcasts.take().getConfidence().getSource());
@@ -689,7 +690,7 @@ public class ChannelConnectionTest extends TestWithWallet {
 
     @Test
     public void testEmptyWallet() throws Exception {
-        Wallet emptyWallet = new Wallet(UNITTEST);
+        Wallet emptyWallet = Wallet.createDeterministic(UNITTEST, Script.ScriptType.P2PKH);
         emptyWallet.freshReceiveKey();
         ChannelTestUtils.RecordingPair pair = ChannelTestUtils.makeRecorders(serverWallet, mockBroadcaster);
         PaymentChannelServer server = pair.server;
@@ -860,7 +861,7 @@ public class ChannelConnectionTest extends TestWithWallet {
             final Transaction settlement2 = new Transaction(UNITTEST, closeMsg.getSettlement().getTx().toByteArray());
             assertEquals(settlement1, settlement2);
             client.receiveMessage(closeMsg);
-            assertNotNull(wallet.getTransaction(settlement2.getHash()));   // Close TX entered the wallet.
+            assertNotNull(wallet.getTransaction(settlement2.getTxId()));   // Close TX entered the wallet.
             sendMoneyToWallet(AbstractBlockChain.NewBlockType.BEST_CHAIN, settlement1);
             client.connectionClosed();
             server.connectionClosed();

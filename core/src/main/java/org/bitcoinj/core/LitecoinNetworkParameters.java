@@ -17,35 +17,35 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Stopwatch;
 
 public class LitecoinNetworkParameters extends NetworkParameters {
-	
-	private static final Logger log = LoggerFactory.getLogger(LitecoinNetworkParameters.class);
-	
-	public static final int MAINNET_MAJORITY_WINDOW = 1000;
+
+    private static final Logger log = LoggerFactory.getLogger(LitecoinNetworkParameters.class);
+
+    public static final int MAINNET_MAJORITY_WINDOW = 1000;
     public static final int MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED = 950;
     public static final int MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE = 750;
-	
-	public LitecoinNetworkParameters() {
-		
-		id = "org.litecoin.main";
-		
-		alertSigningKey = Utils.HEX.decode("04302390343f91cc401d56d68b123028bf52e5fca1939df127f63c6467cdf9c8e2c14b61104cf817d0b780da337893ecc4aaff1309e536162dabbdb45200ca2b0a");
-        
+
+    public LitecoinNetworkParameters() {
+
+        id = "org.litecoin.main";
+
+        alertSigningKey = Utils.HEX.decode("04302390343f91cc401d56d68b123028bf52e5fca1939df127f63c6467cdf9c8e2c14b61104cf817d0b780da337893ecc4aaff1309e536162dabbdb45200ca2b0a");
+
         targetTimespan = (int)(3.5 * 24 * 60 * 60);
         interval = targetTimespan/((int)(2.5 * 60));
-        
+
         maxTarget = Utils.decodeCompactBits(0x1e0fffffL);
-        
+
         addressHeader = 48;
         p2shHeader = 5;
         dumpedPrivateKeyHeader = 176;
-        
+
         packetMagic = 0xfbc0b6dbL;
 
 //        acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
 
-        bip32HeaderPub = 0x0488B21E;
-        bip32HeaderPriv = 0x0488ADE4;
-        
+        bip32HeaderP2PKHpub = 0x0488B21E;
+        bip32HeaderP2PKHpriv = 0x0488ADE4;
+
         port = 9333;
 
         genesisBlock = new Block(this, Block.BLOCK_VERSION_GENESIS);
@@ -54,17 +54,17 @@ public class LitecoinNetworkParameters extends NetworkParameters {
         genesisBlock.setNonce(2084524493L);
         genesisBlock.setMerkleRoot(Sha256Hash.wrap("97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9"));
         genesisBlock.setPrevBlockHash(Sha256Hash.ZERO_HASH);
-        
+
         String genesisHash = genesisBlock.getHashAsString();
-        
+
         checkState(genesisHash.equals("12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"),
                 genesisBlock);
 
         subsidyDecreaseBlockCount = 840000;		// TODO test with 840000
-        
+
         addrSeeds = null;
 //        dnsSeeds = null;
-        
+
         dnsSeeds = new String[] {
                 "seed-a.litecoin.loshan.co.uk",
                 "dnsseed.thrasher.io",
@@ -72,7 +72,7 @@ public class LitecoinNetworkParameters extends NetworkParameters {
                 "dnsseed.litecoinpool.org",
                 "dnsseed.koin-project.com"
         };
-        
+
         majorityEnforceBlockUpgrade = MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = MAINNET_MAJORITY_WINDOW;
@@ -82,7 +82,7 @@ public class LitecoinNetworkParameters extends NetworkParameters {
     private static Coin MAX_MONEY = COIN.multiply(21000000);
     @Override
     public Coin getMaxMoney() { return MAX_MONEY; }
-    
+
     @Override
     public Block getGenesisBlock() {
         return genesisBlock;
@@ -108,9 +108,9 @@ public class LitecoinNetworkParameters extends NetworkParameters {
 //        }
 //    }
 
-    @Override 
-    public String getUriScheme() { 
-    	return "litecoin:"; 
+    @Override
+    public String getUriScheme() {
+        return "litecoin:";
     }
 
 //    /** Gets the hash of the given block for the purpose of checking its PoW */
@@ -127,18 +127,18 @@ public class LitecoinNetworkParameters extends NetworkParameters {
 //        NetworkParameters.registerParams(get());
 //        NetworkParameters.PROTOCOL_VERSION = 70002;
 //    }
-	
+
     /**
      * The flags indicating which block validation tests should be applied to
      * the given block. Enables support for alternative blockchains which enable
      * tests based on different criteria.
-     * 
+     *
      * @param block block to determine flags for.
      * @param height height of the block, if known, null otherwise. Returned
      * tests should be a safe subset if block height is unknown.
      */
     public EnumSet<Block.VerifyFlag> getBlockVerificationFlags(final Block block,
-            final VersionTally tally, final Integer height) {
+                                                               final VersionTally tally, final Integer height) {
         final EnumSet<Block.VerifyFlag> flags = EnumSet.noneOf(Block.VerifyFlag.class);
 
         if (block.isBIP34()) {
@@ -149,19 +149,19 @@ public class LitecoinNetworkParameters extends NetworkParameters {
         }
         return flags;
     }
-    
+
     /** How many blocks pass between difficulty adjustment periods. Bitcoin standardises this to be 2015. */
     public int getInterval() {
         return interval;
     }
-    
+
     protected boolean isDifficultyTransitionPoint(StoredBlock storedPrev) {
         return ((storedPrev.getHeight() + 1) % this.getInterval()) == 0;
     }
 
     @Override
     public void checkDifficultyTransitions(final StoredBlock storedPrev, final Block nextBlock,
-    	final BlockStore blockStore) throws VerificationException, BlockStoreException {
+                                           final BlockStore blockStore) throws VerificationException, BlockStoreException {
         Block prev = storedPrev.getHeader();
 
         // Is this supposed to be a difficulty transition point?
@@ -177,23 +177,23 @@ public class LitecoinNetworkParameters extends NetworkParameters {
 
         // workaround to use checkpoints
         StoredBlock previous = blockStore.get(prev.getHash());
-		for (int i = 0; i < 2; i++) {
-			if(previous == null) {
-				return;
-			}
-			previous = blockStore.get(previous.getHeader().getPrevBlockHash());
-		}
+        for (int i = 0; i < 2; i++) {
+            if(previous == null) {
+                return;
+            }
+            previous = blockStore.get(previous.getHeader().getPrevBlockHash());
+        }
 
         // We need to find a block far back in the chain. It's OK that this is expensive because it only occurs every
         // two weeks after the initial block chain download.
         final Stopwatch watch = Stopwatch.createStarted();
         StoredBlock cursor = blockStore.get(prev.getHash());
-        
+
         // Litecoin: This fixes an issue where a 51% attack can change difficulty at will.
         // Go back the full period unless it's the first retarget after genesis. Code courtesy of Art Forz
         int blockstogoback = this.getInterval() -1;
         if((storedPrev.getHeight() + 1) != this.getInterval()) {
-        	blockstogoback = this.getInterval();
+            blockstogoback = this.getInterval();
         }
 
         for (int i = 0; i < blockstogoback; i++) {
@@ -265,8 +265,8 @@ public class LitecoinNetworkParameters extends NetworkParameters {
         return true;
     }
 
-	@Override
-	public String getPaymentProtocolId() {
-		return PAYMENT_PROTOCOL_ID_TESTNET;
-	}
+    @Override
+    public String getPaymentProtocolId() {
+        return PAYMENT_PROTOCOL_ID_TESTNET;
+    }
 }

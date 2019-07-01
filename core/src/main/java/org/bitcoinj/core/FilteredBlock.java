@@ -17,7 +17,6 @@
 
 package org.bitcoinj.core;
 
-import com.google.common.base.Objects;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -50,7 +49,7 @@ public class FilteredBlock extends Message {
 
     @Override
     public void bitcoinSerializeToStream(OutputStream stream) throws IOException {
-        if (header.transactions == null)
+        if (header.getTransactions() == null)
             header.bitcoinSerializeToStream(stream);
         else
             header.cloneAsHeader().bitcoinSerializeToStream(stream);
@@ -102,7 +101,7 @@ public class FilteredBlock extends Message {
      * @return false if the tx is not relevant to this FilteredBlock
      */
     public boolean provideTransaction(Transaction tx) throws VerificationException {
-        Sha256Hash hash = tx.getHash();
+        Sha256Hash hash = tx.getTxId();
         if (getTransactionHashes().contains(hash)) {
             associatedTransactions.put(hash, tx);
             return true;
@@ -136,7 +135,7 @@ public class FilteredBlock extends Message {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(associatedTransactions, header, merkleTree);
+        return Objects.hash(associatedTransactions, header, merkleTree);
     }
 
     @Override

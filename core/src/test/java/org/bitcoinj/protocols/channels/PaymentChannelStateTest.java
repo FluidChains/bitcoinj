@@ -102,7 +102,7 @@ public class PaymentChannelStateTest extends TestWithWallet {
         }));
         sendMoneyToWallet(AbstractBlockChain.NewBlockType.BEST_CHAIN, COIN);
         chain = new BlockChain(UNITTEST, wallet, blockStore); // Recreate chain as sendMoneyToWallet will confuse it
-        serverWallet = new Wallet(UNITTEST);
+        serverWallet = Wallet.createDeterministic(UNITTEST, Script.ScriptType.P2PKH);
         serverKey = serverWallet.freshReceiveKey();
         chain.addWallet(serverWallet);
 
@@ -258,10 +258,10 @@ public class PaymentChannelStateTest extends TestWithWallet {
         if (versionSelector == PaymentChannelClient.VersionSelector.VERSION_1) {
             assertTrue(ScriptPattern.isSentToMultisig(script));
         } else {
-            assertTrue(ScriptPattern.isPayToScriptHash(script));
+            assertTrue(ScriptPattern.isP2SH(script));
         }
         script = multisigContract.getOutput(1).getScriptPubKey();
-        assertTrue(ScriptPattern.isPayToPubKeyHash(script));
+        assertTrue(ScriptPattern.isP2PKH(script));
         assertTrue(wallet.getPendingTransactions().contains(multisigContract));
 
         // Provide the server with the multisig contract and simulate successful propagation/acceptance.
@@ -278,14 +278,14 @@ public class PaymentChannelStateTest extends TestWithWallet {
         assertEquals(2, wallet.getTransactions(false).size());
         Iterator<Transaction> walletTransactionIterator = wallet.getTransactions(false).iterator();
         Transaction clientWalletMultisigContract = walletTransactionIterator.next();
-        assertFalse(clientWalletMultisigContract.getHash().equals(clientState.getRefundTransaction().getHash()));
-        if (!clientWalletMultisigContract.getHash().equals(multisigContract.getHash())) {
+        assertFalse(clientWalletMultisigContract.getTxId().equals(clientState.getRefundTransaction().getTxId()));
+        if (!clientWalletMultisigContract.getTxId().equals(multisigContract.getTxId())) {
             clientWalletMultisigContract = walletTransactionIterator.next();
-            assertFalse(clientWalletMultisigContract.getHash().equals(clientState.getRefundTransaction().getHash()));
+            assertFalse(clientWalletMultisigContract.getTxId().equals(clientState.getRefundTransaction().getTxId()));
         } else
-            assertFalse(walletTransactionIterator.next().getHash().equals(clientState.getRefundTransaction().getHash()));
-        assertEquals(multisigContract.getHash(), clientWalletMultisigContract.getHash());
-        assertFalse(clientWalletMultisigContract.getInput(0).getConnectedOutput().getSpentBy().getParentTransaction().getHash().equals(refund.getHash()));
+            assertFalse(walletTransactionIterator.next().getTxId().equals(clientState.getRefundTransaction().getTxId()));
+        assertEquals(multisigContract.getTxId(), clientWalletMultisigContract.getTxId());
+        assertFalse(clientWalletMultisigContract.getInput(0).getConnectedOutput().getSpentBy().getParentTransaction().getTxId().equals(refund.getTxId()));
 
         // Both client and server are now in the ready state. Simulate a few micropayments of 0.005 bitcoins.
         Coin size = HALF_COIN.divide(100);
@@ -327,11 +327,11 @@ public class PaymentChannelStateTest extends TestWithWallet {
 
         walletTransactionIterator = wallet.getTransactions(false).iterator();
         Transaction clientWalletCloseTransaction = walletTransactionIterator.next();
-        if (!clientWalletCloseTransaction.getHash().equals(closeTx.getHash()))
+        if (!clientWalletCloseTransaction.getTxId().equals(closeTx.getTxId()))
             clientWalletCloseTransaction = walletTransactionIterator.next();
-        if (!clientWalletCloseTransaction.getHash().equals(closeTx.getHash()))
+        if (!clientWalletCloseTransaction.getTxId().equals(closeTx.getTxId()))
             clientWalletCloseTransaction = walletTransactionIterator.next();
-        assertEquals(closeTx.getHash(), clientWalletCloseTransaction.getHash());
+        assertEquals(closeTx.getTxId(), clientWalletCloseTransaction.getTxId());
         assertNotNull(clientWalletCloseTransaction.getInput(0).getConnectedOutput());
     }
 
@@ -351,7 +351,7 @@ public class PaymentChannelStateTest extends TestWithWallet {
         wallet.addOrUpdateExtension(stateStorage);
 
         Utils.setMockClock(); // Use mock clock
-        final long EXPIRE_TIME = Utils.currentTimeMillis()/1000 + 60*60*24;
+        final long EXPIRE_TIME = Utils.currentTimeSeconds() + 60*60*24;
 
         serverState = makeServerState(mockBroadcaster, serverWallet, serverKey, EXPIRE_TIME);
         assertEquals(getInitialServerState(), serverState.getState());
@@ -383,10 +383,10 @@ public class PaymentChannelStateTest extends TestWithWallet {
         if (versionSelector == PaymentChannelClient.VersionSelector.VERSION_1) {
             assertTrue(ScriptPattern.isSentToMultisig(script));
         } else {
-            assertTrue(ScriptPattern.isPayToScriptHash(script));
+            assertTrue(ScriptPattern.isP2SH(script));
         }
         script = multisigContract.getOutput(1).getScriptPubKey();
-        assertTrue(ScriptPattern.isPayToPubKeyHash(script));
+        assertTrue(ScriptPattern.isP2PKH(script));
         assertTrue(wallet.getPendingTransactions().contains(multisigContract));
 
         // Provide the server with the multisig contract and simulate successful propagation/acceptance.
@@ -424,16 +424,16 @@ public class PaymentChannelStateTest extends TestWithWallet {
         clientState.doStoreChannelInWallet(Sha256Hash.of(new byte[]{}));
         TxFuturePair clientBroadcastedMultiSig = broadcasts.take();
         TxFuturePair broadcastRefund = broadcasts.take();
-        assertEquals(clientBroadcastedMultiSig.tx.getHash(), multisigContract.getHash());
+        assertEquals(clientBroadcastedMultiSig.tx.getTxId(), multisigContract.getTxId());
         for (TransactionInput input : clientBroadcastedMultiSig.tx.getInputs())
             input.verify();
         clientBroadcastedMultiSig.future.set(clientBroadcastedMultiSig.tx);
 
         Transaction clientBroadcastedRefund = broadcastRefund.tx;
-        assertEquals(clientBroadcastedRefund.getHash(), clientState.getRefundTransaction().getHash());
+        assertEquals(clientBroadcastedRefund.getTxId(), clientState.getRefundTransaction().getTxId());
         for (TransactionInput input : clientBroadcastedRefund.getInputs()) {
             // If the multisig output is connected, the wallet will fail to deserialize
-            if (input.getOutpoint().getHash().equals(clientBroadcastedMultiSig.tx.getHash()))
+            if (input.getOutpoint().getHash().equals(clientBroadcastedMultiSig.tx.getTxId()))
                 assertNull(input.getConnectedOutput().getSpentBy());
             input.verify(clientBroadcastedMultiSig.tx.getOutput(0));
         }
@@ -481,7 +481,7 @@ public class PaymentChannelStateTest extends TestWithWallet {
             }
 
             refund = new Transaction(UNITTEST, refundTxBytes);
-            refund.addInput(new TransactionInput(UNITTEST, refund, new byte[]{}, new TransactionOutPoint(UNITTEST, 42, refund.getHash())));
+            refund.addInput(new TransactionInput(UNITTEST, refund, new byte[]{}, new TransactionOutPoint(UNITTEST, 42, refund.getTxId())));
             try {
                 serverV1State().provideRefundTransaction(refund, myKey.getPubKey());
                 fail();
@@ -702,7 +702,7 @@ public class PaymentChannelStateTest extends TestWithWallet {
         assertEquals(CENT.add(Transaction.REFERENCE_DEFAULT_MIN_TX_FEE), wallet.getBalance());
 
         Utils.setMockClock(); // Use mock clock
-        final long EXPIRE_TIME = Utils.currentTimeMillis()/1000 + 60*60*24;
+        final long EXPIRE_TIME = Utils.currentTimeSeconds() + 60*60*24;
 
         serverState = makeServerState(mockBroadcaster, serverWallet, serverKey, EXPIRE_TIME);
         assertEquals(getInitialServerState(), serverState.getState());
@@ -815,7 +815,7 @@ public class PaymentChannelStateTest extends TestWithWallet {
         Context.propagate(new Context(UNITTEST, 100, Coin.ZERO, true));
 
         Utils.setMockClock(); // Use mock clock
-        final long EXPIRE_TIME = Utils.currentTimeMillis()/1000 + 60*60*24;
+        final long EXPIRE_TIME = Utils.currentTimeSeconds() + 60*60*24;
 
         serverState = makeServerState(mockBroadcaster, serverWallet, serverKey, EXPIRE_TIME);
         assertEquals(getInitialServerState(), serverState.getState());
@@ -859,10 +859,10 @@ public class PaymentChannelStateTest extends TestWithWallet {
         if (versionSelector == PaymentChannelClient.VersionSelector.VERSION_1) {
             assertTrue(ScriptPattern.isSentToMultisig(script));
         } else {
-            assertTrue(ScriptPattern.isPayToScriptHash(script));
+            assertTrue(ScriptPattern.isP2SH(script));
         }
         script = multisigContract.getOutput(1).getScriptPubKey();
-        assertTrue(ScriptPattern.isPayToPubKeyHash(script));
+        assertTrue(ScriptPattern.isP2PKH(script));
         assertTrue(wallet.getPendingTransactions().contains(multisigContract));
 
         // Provide the server with the multisig contract and simulate successful propagation/acceptance.
@@ -953,10 +953,10 @@ public class PaymentChannelStateTest extends TestWithWallet {
         if (versionSelector == PaymentChannelClient.VersionSelector.VERSION_1) {
             assertTrue(ScriptPattern.isSentToMultisig(script));
         } else {
-            assertTrue(ScriptPattern.isPayToScriptHash(script));
+            assertTrue(ScriptPattern.isP2SH(script));
         }
         script = multisigContract.getOutput(1).getScriptPubKey();
-        assertTrue(ScriptPattern.isPayToPubKeyHash(script));
+        assertTrue(ScriptPattern.isP2PKH(script));
         assertTrue(wallet.getPendingTransactions().contains(multisigContract));
 
         // Provide the server with the multisig contract and simulate successful propagation/acceptance.
@@ -973,14 +973,14 @@ public class PaymentChannelStateTest extends TestWithWallet {
         assertEquals(2, wallet.getTransactions(false).size());
         Iterator<Transaction> walletTransactionIterator = wallet.getTransactions(false).iterator();
         Transaction clientWalletMultisigContract = walletTransactionIterator.next();
-        assertFalse(clientWalletMultisigContract.getHash().equals(clientState.getRefundTransaction().getHash()));
-        if (!clientWalletMultisigContract.getHash().equals(multisigContract.getHash())) {
+        assertFalse(clientWalletMultisigContract.getTxId().equals(clientState.getRefundTransaction().getTxId()));
+        if (!clientWalletMultisigContract.getTxId().equals(multisigContract.getTxId())) {
             clientWalletMultisigContract = walletTransactionIterator.next();
-            assertFalse(clientWalletMultisigContract.getHash().equals(clientState.getRefundTransaction().getHash()));
+            assertFalse(clientWalletMultisigContract.getTxId().equals(clientState.getRefundTransaction().getTxId()));
         } else
-            assertFalse(walletTransactionIterator.next().getHash().equals(clientState.getRefundTransaction().getHash()));
-        assertEquals(multisigContract.getHash(), clientWalletMultisigContract.getHash());
-        assertFalse(clientWalletMultisigContract.getInput(0).getConnectedOutput().getSpentBy().getParentTransaction().getHash().equals(refund.getHash()));
+            assertFalse(walletTransactionIterator.next().getTxId().equals(clientState.getRefundTransaction().getTxId()));
+        assertEquals(multisigContract.getTxId(), clientWalletMultisigContract.getTxId());
+        assertFalse(clientWalletMultisigContract.getInput(0).getConnectedOutput().getSpentBy().getParentTransaction().getTxId().equals(refund.getTxId()));
 
         // Both client and server are now in the ready state. Simulate a few micropayments of 0.005 bitcoins.
         Coin size = HALF_COIN.divide(100);

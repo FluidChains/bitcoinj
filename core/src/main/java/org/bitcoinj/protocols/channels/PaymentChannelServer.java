@@ -26,11 +26,12 @@ import org.bitcoinj.wallet.Wallet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import net.jcip.annotations.GuardedBy;
 import org.bitcoin.paymentchannel.Protos;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -418,13 +419,14 @@ public class PaymentChannelServer {
                 .addListener(new Runnable() {
                     @Override
                     public void run() {
-                        multisigContractPropogated(providedContract, contract.getHash());
+                        multisigContractPropogated(providedContract, contract.getTxId());
                     }
                 }, Threading.SAME_THREAD);
     }
 
     @GuardedBy("lock")
-    private void receiveUpdatePaymentMessage(Protos.UpdatePayment msg, boolean sendAck) throws SignatureDecodeException, VerificationException, ValueOutOfRangeException, InsufficientMoneyException {
+    private void receiveUpdatePaymentMessage(Protos.UpdatePayment msg, boolean sendAck) throws SignatureDecodeException,
+            VerificationException, ValueOutOfRangeException, InsufficientMoneyException {
         log.info("Got a payment update");
 
         Coin lastBestPayment = state.getBestValueToMe();
@@ -456,7 +458,7 @@ public class PaymentChannelServer {
                         log.info("Failed retrieving paymentIncrease info future");
                         error("Failed processing payment update", Protos.Error.ErrorCode.OTHER, CloseReason.UPDATE_PAYMENT_FAILED);
                     }
-                });
+                }, MoreExecutors.directExecutor());
             }
         }
 
@@ -560,7 +562,7 @@ public class PaymentChannelServer {
                 public ListenableFuture<Transaction> apply(KeyParameter userKey) throws Exception {
                     return state.close(userKey);
                 }
-            });
+            }, MoreExecutors.directExecutor());
         } else {
             result = state.close();
         }
@@ -587,7 +589,7 @@ public class PaymentChannelServer {
                 log.error("Failed to broadcast settlement tx", t);
                 conn.destroyConnection(clientRequestedClose);
             }
-        });
+        }, MoreExecutors.directExecutor());
     }
 
     /**
@@ -609,7 +611,7 @@ public class PaymentChannelServer {
                     StoredPaymentChannelServerStates channels = (StoredPaymentChannelServerStates)
                             wallet.getExtensions().get(StoredPaymentChannelServerStates.EXTENSION_ID);
                     if (channels != null) {
-                        StoredServerChannel storedServerChannel = channels.getChannel(state.getContract().getHash());
+                        StoredServerChannel storedServerChannel = channels.getChannel(state.getContract().getTxId());
                         if (storedServerChannel != null) {
                             storedServerChannel.clearConnectedHandler();
                         }

@@ -17,25 +17,28 @@
 
 package org.bitcoinj.core;
 
-import com.google.common.base.Objects;
-import org.bitcoinj.core.Block;
-import org.bitcoinj.core.StoredBlock;
-import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.net.discovery.*;
-import org.bitcoinj.params.*;
-import org.bitcoinj.script.*;
+import org.bitcoinj.net.discovery.HttpDiscovery;
+import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.params.RegTestParams;
+import org.bitcoinj.params.TestNet3Params;
+import org.bitcoinj.params.UnitTestParams;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
-
 import org.bitcoinj.utils.MonetaryFormat;
-
-import javax.annotation.*;
-import java.io.*;
-import java.math.*;
-import java.util.*;
-
-import static org.bitcoinj.core.Coin.*;
 import org.bitcoinj.utils.VersionTally;
+
+import javax.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.bitcoinj.core.Coin.COIN;
+import static org.bitcoinj.core.Coin.FIFTY_COINS;
 
 /**
  * <p>NetworkParameters contains the data needed for working with an instantiation of a Bitcoin chain.</p>
@@ -85,8 +88,10 @@ public abstract class NetworkParameters {
     protected int interval;
     protected int targetTimespan;
     protected byte[] alertSigningKey;
-    protected int bip32HeaderPub;
-    protected int bip32HeaderPriv;
+    protected int bip32HeaderP2PKHpub;
+    protected int bip32HeaderP2PKHpriv;
+    protected int bip32HeaderP2WPKHpub;
+    protected int bip32HeaderP2WPKHpriv;
 
     /** Used to check majorities for block version upgrade */
     protected int majorityEnforceBlockUpgrade;
@@ -109,7 +114,7 @@ public abstract class NetworkParameters {
     protected int[] addrSeeds;
     protected HttpDiscovery.Details[] httpSeeds = {};
     protected Map<Integer, Sha256Hash> checkpoints = new HashMap<>();
-    protected transient MessageSerializer defaultSerializer = null;
+    protected volatile transient MessageSerializer defaultSerializer = null;
 
     protected NetworkParameters() {
         alertSigningKey = SATOSHI_KEY;
@@ -160,36 +165,6 @@ public abstract class NetworkParameters {
      */
     public static final Coin MAX_MONEY = COIN.multiply(MAX_COINS);
 
-    /** Alias for TestNet3Params.get(), use that instead. */
-    @Deprecated
-    public static NetworkParameters testNet() {
-        return TestNet3Params.get();
-    }
-
-    /** Alias for TestNet3Params.get(), use that instead. */
-    @Deprecated
-    public static NetworkParameters testNet3() {
-        return TestNet3Params.get();
-    }
-
-    /** Alias for MainNetParams.get(), use that instead */
-    @Deprecated
-    public static NetworkParameters prodNet() {
-        return MainNetParams.get();
-    }
-
-    /** Returns a testnet params modified to allow any difficulty target. */
-    @Deprecated
-    public static NetworkParameters unitTests() {
-        return UnitTestParams.get();
-    }
-
-    /** Returns a standard regression test params (similar to unitTests) */
-    @Deprecated
-    public static NetworkParameters regTests() {
-        return RegTestParams.get();
-    }
-
     /**
      * A Java package style string acting as unique ID for these parameters
      */
@@ -208,7 +183,7 @@ public abstract class NetworkParameters {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getId());
+        return Objects.hash(getId());
     }
 
     /** Returns the network parameters for the given string ID or NULL if not recognized. */
@@ -384,16 +359,25 @@ public abstract class NetworkParameters {
         return alertSigningKey;
     }
 
-    /** Returns the 4 byte header for BIP32 (HD) wallet - public key part. */
-    public int getBip32HeaderPub() {
-        return bip32HeaderPub;
+    /** Returns the 4 byte header for BIP32 wallet P2PKH - public key part. */
+    public int getBip32HeaderP2PKHpub() {
+        return bip32HeaderP2PKHpub;
     }
 
-    /** Returns the 4 byte header for BIP32 (HD) wallet - private key part. */
-    public int getBip32HeaderPriv() {
-        return bip32HeaderPriv;
+    /** Returns the 4 byte header for BIP32 wallet P2PKH - private key part. */
+    public int getBip32HeaderP2PKHpriv() {
+        return bip32HeaderP2PKHpriv;
     }
 
+    /** Returns the 4 byte header for BIP32 wallet P2WPKH - public key part. */
+    public int getBip32HeaderP2WPKHpub() {
+        return bip32HeaderP2WPKHpub;
+    }
+
+    /** Returns the 4 byte header for BIP32 wallet P2WPKH - private key part. */
+    public int getBip32HeaderP2WPKHpriv() {
+        return bip32HeaderP2WPKHpriv;
+    }
     /**
      * Returns the number of coins that will be produced in total, on this
      * network. Where not applicable, a very large number of coins is returned
@@ -401,10 +385,8 @@ public abstract class NetworkParameters {
      */
     public abstract Coin getMaxMoney();
 
-    /**
-     * Any standard (ie P2PKH) output smaller than this value will
-     * most likely be rejected by the network.
-     */
+    /** @deprecated use {@link TransactionOutput#getMinNonDustValue()} */
+    @Deprecated
     public abstract Coin getMinNonDustOutput();
 
     /**
@@ -530,7 +512,8 @@ public abstract class NetworkParameters {
     public static enum ProtocolVersion {
         MINIMUM(70000),
         PONG(60001),
-        BLOOM_FILTER(70000),
+        BLOOM_FILTER(70000), // BIP37
+        BLOOM_FILTER_BIP111(70011), // BIP111
         WITNESS_VERSION(70012),
         CURRENT(70012);
 
