@@ -285,6 +285,16 @@ public class Wallet extends BaseTaggableObject
 	}
 
 	/**
+	 * @param params network parameters
+	 * @param seed deterministic seed
+	 * @param accountPath account path
+	 * @return an instance of a wallet from a deterministic seed.
+	 */
+	public static Wallet fromSeed(NetworkParameters params, DeterministicSeed seed, ImmutableList<ChildNumber> accountPath, String chainCode) {
+		return new Wallet(params, new KeyChainGroup(params, seed, accountPath, chainCode));
+	}
+
+	/**
 	 * Creates a wallet that tracks payments to and from the HD key hierarchy rooted by the given watching key.
 	 */
 	public static Wallet fromWatchingKey(NetworkParameters params, DeterministicKey watchKey) {

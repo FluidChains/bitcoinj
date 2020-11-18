@@ -318,6 +318,14 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
 	}
 
 	/**
+	 * Creates a deterministic key chain starting from the given seed. This deterministic Key chain
+	 * will follow the account path defined.
+	 */
+	public DeterministicKeyChain(DeterministicSeed seed, ImmutableList<ChildNumber> accountPath, String chainCode) {
+		this(seed, null, accountPath, chainCode);
+	}
+
+	/**
 	 * Creates a deterministic key chain that watches the given (public only) root key. You can use this to calculate
 	 * balances and generally follow along, but spending is not possible with such a chain.
 	 */
@@ -427,6 +435,30 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
 		basicKeyChain = new BasicKeyChain(crypter);
 		if (!seed.isEncrypted()) {
 			rootKey = HDKeyDerivation.createMasterPrivateKey(checkNotNull(seed.getSeedBytes()));
+			rootKey.setCreationTimeSeconds(seed.getCreationTimeSeconds());
+			basicKeyChain.importKey(rootKey);
+			hierarchy = new DeterministicHierarchy(rootKey);
+			for (int i = 1; i <= getAccountPath().size(); i++) {
+				basicKeyChain.importKey(hierarchy.get(getAccountPath().subList(0, i), false, true));
+			}
+			initializeHierarchyUnencrypted(rootKey);
+		}
+		// Else...
+		// We can't initialize ourselves with just an encrypted seed, so we expected deserialization code to do the
+		// rest of the setup (loading the root key).
+	}
+
+	/**
+	 * Creates a deterministic key chain with an encrypted deterministic seed using the provided account path.
+	 *  Using {@link KeyCrypter KeyCrypter} to decrypt.
+	 */
+	protected DeterministicKeyChain(DeterministicSeed seed, @Nullable KeyCrypter crypter,
+									ImmutableList<ChildNumber> accountPath, String chainCode) {
+		setAccountPath(accountPath);
+		this.seed = seed;
+		basicKeyChain = new BasicKeyChain(crypter);
+		if (!seed.isEncrypted()) {
+			rootKey = HDKeyDerivation.createMasterPrivateKey(checkNotNull(seed.getSeedBytes()), chainCode);
 			rootKey.setCreationTimeSeconds(seed.getCreationTimeSeconds());
 			basicKeyChain.importKey(rootKey);
 			hierarchy = new DeterministicHierarchy(rootKey);
