@@ -131,7 +131,7 @@ public class ChildKeyDerivationTest {
 
     @Test
     public void inverseEqualsNormal() throws Exception {
-        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("Wired / Aug 13th 2014 / Snowden: I Left the NSA Clues, But They Couldn't Find Them".getBytes());
+        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("Wired / Aug 13th 2014 / Snowden: I Left the NSA Clues, But They Couldn't Find Them".getBytes(), "Bitcoin seed");
         HDKeyDerivation.RawKeyBytes key2 = HDKeyDerivation.deriveChildKeyBytesFromPublic(key1.dropPrivateBytes().dropParent(), ChildNumber.ZERO, HDKeyDerivation.PublicDeriveMode.NORMAL);
         HDKeyDerivation.RawKeyBytes key3 = HDKeyDerivation.deriveChildKeyBytesFromPublic(key1.dropPrivateBytes().dropParent(), ChildNumber.ZERO, HDKeyDerivation.PublicDeriveMode.WITH_INVERSION);
         assertArrayEquals(key2.keyBytes, key3.keyBytes);
@@ -145,7 +145,7 @@ public class ChildKeyDerivationTest {
         KeyCrypter scrypter = new KeyCrypterScrypt();
         KeyParameter aesKey = scrypter.deriveKey("we never went to the moon");
 
-        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("it was all a hoax".getBytes());
+        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("it was all a hoax".getBytes(), "Bitcoin seed");
         DeterministicKey encryptedKey1 = key1.encrypt(scrypter, aesKey, null);
         DeterministicKey decryptedKey1 = encryptedKey1.decrypt(aesKey);
         assertEquals(key1, decryptedKey1);
@@ -170,7 +170,7 @@ public class ChildKeyDerivationTest {
 
     @Test
     public void pubOnlyDerivation() throws Exception {
-        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes());
+        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes(), "Bitcoin seed");
         assertFalse(key1.isPubKeyOnly());
         DeterministicKey key2 = HDKeyDerivation.deriveChildKey(key1, ChildNumber.ZERO_HARDENED);
         assertFalse(key2.isPubKeyOnly());
@@ -191,7 +191,7 @@ public class ChildKeyDerivationTest {
 
     @Test
     public void testSerializationMainAndTestNetworks() {
-        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes());
+        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes(), "Bitcoin seed");
         String pub58 = key1.serializePubB58(MAINNET);
         String priv58 = key1.serializePrivB58(MAINNET);
         assertEquals("xpub661MyMwAqRbcF7mq7Aejj5xZNzFfgi3ABamE9FedDHVmViSzSxYTgAQGcATDo2J821q7Y9EAagjg5EP3L7uBZk11PxZU3hikL59dexfLkz3", pub58);
@@ -204,7 +204,7 @@ public class ChildKeyDerivationTest {
 
     @Test
     public void serializeToTextAndBytes() {
-        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes());
+        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes(), "Bitcoin seed");
         DeterministicKey key2 = HDKeyDerivation.deriveChildKey(key1, ChildNumber.ZERO_HARDENED);
 
         // Creation time can't survive the xpub serialization format unfortunately.
@@ -243,7 +243,7 @@ public class ChildKeyDerivationTest {
 
     @Test
     public void parentlessDeserialization() {
-        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes());
+        DeterministicKey key1 = HDKeyDerivation.createMasterPrivateKey("satoshi lives!".getBytes(), "Bitcoin seed");
         DeterministicKey key2 = HDKeyDerivation.deriveChildKey(key1, ChildNumber.ZERO_HARDENED);
         DeterministicKey key3 = HDKeyDerivation.deriveChildKey(key2, ChildNumber.ZERO_HARDENED);
         DeterministicKey key4 = HDKeyDerivation.deriveChildKey(key3, ChildNumber.ZERO_HARDENED);

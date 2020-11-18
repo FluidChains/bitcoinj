@@ -149,7 +149,7 @@ public class BIP32Test {
     private void testVector(int testCase) {
         log.info("=======  Test vector {}", testCase);
         HDWTestVector tv = tvs[testCase];
-        DeterministicKey masterPrivateKey = HDKeyDerivation.createMasterPrivateKey(HEX.decode(tv.seed));
+        DeterministicKey masterPrivateKey = HDKeyDerivation.createMasterPrivateKey(HEX.decode(tv.seed), "Bitcoin seed");
         assertEquals(testEncode(tv.priv), testEncode(masterPrivateKey.serializePrivB58(MAINNET)));
         assertEquals(testEncode(tv.pub), testEncode(masterPrivateKey.serializePubB58(MAINNET)));
         DeterministicHierarchy dh = new DeterministicHierarchy(masterPrivateKey);
